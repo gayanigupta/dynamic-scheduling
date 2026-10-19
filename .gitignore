@@ -1,0 +1,6 @@
+build/
+experiment
+unit_tests
+*.o
+results.csv
+.DS_Store
