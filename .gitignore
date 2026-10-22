@@ -4,3 +4,8 @@ unit_tests
 *.o
 results.csv
 .DS_Store
+paper/*.pdf
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.synctex.gz

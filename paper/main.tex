@@ -9,8 +9,7 @@
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{booktabs}
-\usepackage[colorlinks, citecolor=blue]{hyperref}
-\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
 
 \newtheorem{definition}{Definition}
 
@@ -106,8 +105,8 @@ in~\cite{DynamicFog}; it migrates load but does not repartition a workflow
 DAG by its dependency structure. Dynamic workflow rescheduling that
 reconsiders unexecutable sub-plans appears in~\cite{DynamicWorkflow}; it
 re-plans a suffix of the plan rather than the minimal affected region of a
-dependency DAG. Full-DAG rescheduling under uncertainty is covered
-by~\cite{UncertainFog}.
+dependency DAG. Neither line of work isolates a dependency-closed failure
+region or preserves unaffected assignments, which is the gap addressed here.
 
 Initial partitioning builds on HEFT-style list
 scheduling~\cite{topcuoglu2002heft}; our recovery repartitioner reuses its
@@ -193,13 +192,15 @@ pay.
 Tasks adjacent to $S$ that stay put (completed, running, or anchored on
 healthy nodes) are \emph{anchors}. Each alive candidate $c$ is scored by
 data-weighted proximity to anchor resources plus a load term:
-\[
-\mathit{score}(c) = \!\!\sum_{\substack{(a\to t),\, t\in S,\, a\notin S}}
-\!\! d(a,t)\,\mathit{lat}(\mathit{node}(a),c)
-+ \!\!\sum_{\substack{(t\to b),\, t\in S,\, b\notin S}}
-\!\! d(t,b)\,\mathit{lat}(c,\mathit{node}(b))
+{\small\begin{equation*}
+\begin{split}
+\mathit{score}(c) =& \sum_{\substack{(a\to t),\, t\in S,\, a\notin S}}
+d(a,t)\,\mathit{lat}(\mathit{node}(a),c)\\
+&+ \sum_{\substack{(t\to b),\, t\in S,\, b\notin S}}
+d(t,b)\,\mathit{lat}(c,\mathit{node}(b))
 + \varepsilon\,\mathit{avail}(c).
-\]
+\end{split}
+\end{equation*}}
 The top-$k$ candidates plus all nodes already hosting members of $S$ (the
 ``stay'' option) form the candidate set $C$.
 
@@ -207,11 +208,13 @@ The top-$k$ candidates plus all nodes already hosting members of $S$ (the
 
 $S$ is re-list-scheduled onto $C$ by decreasing upward rank, where children
 outside $S$ are fixed sinks. Each task is placed on the candidate minimizing
-\[
-\mathit{EFT}(t,c) = \max\{\mathit{avail}(c),\;
-  \max_{p \in \mathit{par}(t)} [\,\mathit{fin}(p) +
-  T(\mathit{loc}(p),c,d(p,t))\,]\} + \mathit{exec}(t,c),
-\]
+\begin{equation*}
+\begin{split}
+\mathit{EFT}(t,c) =\;& \max\!\big\{\mathit{avail}(c),\;
+  \max_{p \in \mathit{par}(t)} \big[\,\mathit{fin}(p)\\
+&  + T(\mathit{loc}(p),c,d(p,t))\,\big]\big\} + \mathit{exec}(t,c),
+\end{split}
+\end{equation*}
 augmented by a movement penalty $\lambda_{move} + \mathit{mig}(t)$ when $t$
 is on a healthy node and $c \neq \mathit{node}(t)$; forced moves (dead home)
 pay only migration. $\mathit{fin}(\cdot)$ and $\mathit{loc}(\cdot)$ are
@@ -284,7 +287,17 @@ pre-failure states per scenario.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{../figures/fig4_scale_scope.png}
+\includegraphics[width=\columnwidth]{figures/fig1_makespan.png}
+\caption{Makespan by strategy and workload mode. Full repartitioning is
+lowest but at the disruption cost shown in Fig.~\ref{fig:disruption};
+partial stays within $\sim$8\% of it while recovering a fraction of the
+workflow.}
+\label{fig:makespan}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig4_scale_scope.png}
 \caption{Replanning scope vs.\ workflow size. Partial repartitioning stays
 proportional to the failure's blast radius; full repartitioning grows
 linearly with the workflow.}
@@ -293,25 +306,27 @@ linearly with the workflow.}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{../figures/fig2_disruption.png}
+\includegraphics[width=\columnwidth]{figures/fig2_disruption.png}
 \caption{Post-failure disruption: tasks migrated (left) and replanning
 problem size (right).}
 \label{fig:disruption}
 \end{figure}
 
-Table~\ref{tab:normal} summarizes the normal mode. Partial repartitioning
-retains 99\% of the exact solver's schedule quality while considering
-$\sim$6$\times$ fewer tasks than full repartitioning and moving $\sim$3$\times$
-fewer. Communication cost drops an order of magnitude because intact routes
-and assignments are preserved.
+Table~\ref{tab:normal} and Fig.~\ref{fig:makespan} summarize the normal
+mode. Partial repartitioning retains 99\% of the exact solver's schedule
+quality while considering $\sim$6$\times$ fewer tasks than full
+repartitioning and moving $\sim$3$\times$ fewer. Communication cost drops
+an order of magnitude because intact routes and assignments are preserved.
 
 \begin{table}[t]
 \centering
 \caption{Normal mode, 120 scenarios (means $\pm$ std)}
 \label{tab:normal}
-\begin{tabular}{lrrrr}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrr@{}}
 \toprule
-Strategy & Makespan (ms) & Moved & Considered & Comm.\ cost \\
+Strategy & Makespan & Moved & Scope & Comm.\ cost \\
 \midrule
 static  & 9053 & 3.0 & 3.0  & 13.1 \\
 greedy  & 8386 & 3.0 & 3.0  & 13.1 \\
@@ -322,17 +337,36 @@ B\&B    & 8386 & 3.0 & 3.4 & 14.2 \\
 \end{tabular}
 \end{table}
 
-Under cascaded failures (Table~\ref{tab:multi}) the separation widens:
-partial moves 10 tasks and replans 11, versus 35 and 70 for full
-repartitioning, and the static fallback meets only 7\% of deadlines.
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig11_multifail.png}
+\caption{Cascaded failures (3 per run): makespan and tasks migrated. Partial
+repartitioning bounds the cumulative disruption of repeated failures; the
+static fallback misses 93\% of deadlines.}
+\label{fig:multifail}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig6_deadline.png}
+\caption{Deadline satisfaction rate by strategy and mode.}
+\label{fig:deadline}
+\end{figure}
+
+Under cascaded failures (Table~\ref{tab:multi} and Fig.~\ref{fig:multifail})
+the separation widens: partial moves 10 tasks and replans 11, versus 35 and
+70 for full repartitioning, and the static fallback meets only 7\% of
+deadlines (Fig.~\ref{fig:deadline}).
 
 \begin{table}[t]
 \centering
 \caption{Multi-failure mode, 3 failures/run, 15 scenarios}
 \label{tab:multi}
-\begin{tabular}{lrrrrr}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrr@{}}
 \toprule
-Strategy & Makespan (ms) & Moved & Considered & Deadline\% \\
+Strategy & Makespan & Moved & Scope & Dl.\ met\% \\
 \midrule
 static  & 12665 & 8.7 & 8.7 & 7 \\
 greedy  & 10558 & 8.8 & 8.8 & 33 \\
@@ -345,12 +379,22 @@ B\&B    & 10600 & 9.4 & 10.9 & 42 \\
 
 \subsection{Optimality validation}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig5_milp_gap.png}
+\caption{Gap between each strategy's simulated makespan and the MILP
+lower bound on the recovered region (28 instances, all solved to a proven
+optimum).}
+\label{fig:milpgap}
+\end{figure}
+
 On 28 exported failure instances, the MILP solved to a proven optimum in
 under 0.1~s each. Mean gap of the \emph{simulated} makespan to the MILP
-subgraph bound: partial 42.4\%, greedy 42.4\%, B\&B 42.6\%, static 48.7\%,
-full 29.8\%. This bound excludes post-recovery execution of tasks outside the
-affected region, so it is conservative; the tighter same-model comparison is
-the exact B\&B solver, against which partial is within 0.1\%.
+subgraph bound (Fig.~\ref{fig:milpgap}): partial 42.4\%, greedy 42.4\%,
+B\&B 42.6\%, static 48.7\%, full 29.8\%. This bound excludes post-recovery
+execution of tasks outside the affected region, so it is conservative; the
+tighter same-model comparison is the exact B\&B solver, against which
+partial is within 0.1\%.
 
 \subsection{Incremental path repair}
 
@@ -381,21 +425,19 @@ the boundary-expansion threshold.
 
 \begin{thebibliography}{9}
 \bibitem{bhowmick2019}
-S.~Bhowmick et al., ``Incremental update of a shortest-path tree on dynamic
-graphs,'' \emph{IEEE Trans.}, 2019. doi:10.1109/TBDATA.2019.XXXX (IEEE
-Xplore doc.\ 8622042).
+S.~Riazi, S.~Srinivasan, S.~K. Das, S.~Bhowmick, and B.~Norris,
+``Single-source shortest path tree for big dynamic graphs,'' in
+\emph{Proc.\ IEEE Int.\ Conf.\ Big Data (BigData)}, 2018, pp.\ 4054--4062.
 
 \bibitem{DynamicFog}
-``Dynamic task distribution in fog computing,'' arXiv:1710.05239, 2017.
+G.~Lee, W.~Saad, and M.~Bennis, ``An online optimization framework for
+distributed fog network formation with minimal latency,''
+arXiv:1710.05239, 2017.
 
 \bibitem{DynamicWorkflow}
-``Dynamic workflow rescheduling reconsidering unexecutable plan regions,''
-\emph{Int.\ J.\ Computational Science and Engineering}, 2011.
-doi:10.1504/IJCSE.2011.041219.
-
-\bibitem{UncertainFog}
-``Scheduling and rescheduling of tasks under uncertainty in fog systems,''
-see related literature.
+Z.~Yu and W.~Shi, ``An adaptive rescheduling strategy for grid workflow
+applications,'' in \emph{Proc.\ IEEE Int.\ Parallel and Distributed
+Processing Symp.\ (IPDPS)}, 2007.
 
 \bibitem{topcuoglu2002heft}
 H.~Topcuoglu, S.~Hariri, and M.-Y. Wu, ``Performance-effective and
