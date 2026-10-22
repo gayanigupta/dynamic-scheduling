@@ -324,16 +324,30 @@ def main():
         axs[0].legend(fontsize=8)
         axs[0].grid(axis="y", alpha=0.3)
 
-        upd = np.mean([fnum(r["spt_updates"]) for r in normal
-                       if r["strategy"] == "partial"
-                       and r["completed"] == "1"])
-        axs[1].bar([0, 1], [upd, 10], 0.5,
-                   color=[COLOR["partial"], "grey"],
+        # Right: measured route-repair work, lazy SSSP vs eager full rebuild,
+        # under single and triple failures.
+        def mean_upd(fname):
+            rows = read(fname)
+            v = [fnum(r["spt_updates"]) for r in rows
+                 if r["strategy"] == "partial" and r["completed"] == "1"]
+            return np.mean(v) if v else 0.0
+
+        lazy1, eager1 = mean_upd("results_lazyrepair.csv"), \
+            mean_upd("results_eagerrepair.csv")
+        lazy3, eager3 = mean_upd("results_mf3_lazy.csv"), \
+            mean_upd("results_mf3_eager.csv")
+        xs = np.arange(2)
+        axs[1].bar(xs - 0.17, [lazy1, lazy3], 0.32,
+                   label="lazy SSSP (ours)", color=COLOR["partial"],
                    edgecolor="black", linewidth=0.4)
-        axs[1].set_xticks([0, 1])
-        axs[1].set_xticklabels(["Lazy SSSP\n(ours)", "Full APSP\nrebuild"])
-        axs[1].set_ylabel("SPT rows recomputed per failure")
-        axs[1].set_title("Incremental vs full route repair")
+        axs[1].bar(xs + 0.17, [eager1, eager3], 0.32,
+                   label="eager rebuild (APSP)", color="grey",
+                   edgecolor="black", linewidth=0.4)
+        axs[1].set_xticks(xs)
+        axs[1].set_xticklabels(["1 failure", "3 failures"])
+        axs[1].set_ylabel("SPT rows recomputed")
+        axs[1].set_title("Incremental vs eager route repair")
+        axs[1].legend(fontsize=8)
         axs[1].grid(axis="y", alpha=0.3)
         save(fig, "fig14_ablation.png")
 

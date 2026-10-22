@@ -37,6 +37,7 @@ struct Config {
   bool skewed_infra = false;
   int n_failures = 1;       // failures per run (spaced across the makespan)
   bool no_steiner = false;  // ablation: disable MST/Steiner-region candidates
+  bool full_repair = false; // ablation: eager full-APSP rebuild per failure
 };
 
 Config parse(int argc, char** argv) {
@@ -91,6 +92,8 @@ Config parse(int argc, char** argv) {
       c.n_failures = std::stoi(next("--n-failures"));
     else if (a == "--no-steiner")
       c.no_steiner = true;
+    else if (a == "--full-repair")
+      c.full_repair = true;
     else {
       fprintf(stderr, "unknown arg %s\n", a.c_str());
       exit(2);
@@ -155,6 +158,7 @@ int main(int argc, char** argv) {
         ip.skewed = cfg.skewed_infra;
         TaskDAG dag = gen_dag(rng, dp);
         InfraGraph infra = gen_infra(rng, ip);
+        infra.eager_repair = cfg.full_repair;
         InitialSchedule init = heft_schedule(dag, infra);
 
         // Baseline run without failure -> makespan reference + deadline.

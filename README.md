@@ -34,7 +34,9 @@ make test
 Options: `--seeds N`, `--tasks a,b,c`, `--nodes N`, `--fail-fracs x,y`,
 `--deadline-factor F`, `--no-optimal`, `--seed S`, `--out FILE`,
 `--dag-mode heavy`, `--infra-mode skewed`, `--n-failures K`,
-`--export-milp DIR`.
+`--export-milp DIR`. Ablations: `--no-steiner` (plain scored shortlist
+instead of the MST/Steiner region) and `--full-repair` (eager rebuild of
+all SPT rows on every failure instead of lazy incremental repair).
 
 ## MILP baseline (Python, scipy/HiGHS)
 

@@ -583,19 +583,25 @@ partial is within 0.1\%.
 \centering
 \includegraphics[width=\columnwidth]{figures/fig14_ablation.png}
 \caption{Ablation of the algorithmic choices. Left: MST/Steiner-region
-candidates vs.\ a plain scored shortlist. Right: lazy SSSP repair
-recomputes $\approx$4 source trees per failure, vs.\ 10 for a full APSP
-rebuild.}
+candidates vs.\ a plain scored shortlist. Right: measured route-repair
+work under lazy SSSP repair vs.\ eager all-rows rebuild, under one and
+three failures.}
 \label{fig:ablation}
 \end{figure}
 
-Each failure triggers $\approx 4$ single-source SPT rebuilds on average,
-versus a full $10\times10$ all-pairs recompute---corroborating that lazy
-repair confines route updates to traffic that actually crosses the failure
-(Fig.~\ref{fig:ablation}). Ablating the Steiner-region candidates confirms
-the MST-based selection helps: partial's mean makespan improves from
-8{,}396 to 8{,}385 ms in normal mode and from 17{,}123 to 17{,}077 ms under
-data-heavy workloads---the latter also below the B\&B optimum's 17{,}092 ms.
+We measured route-repair work by rerunning every scenario with eager
+repair enabled: on each failure, all alive source rows are rebuilt
+immediately (the eager equivalent of a full APSP recompute). A single
+failure triggers $4.2$ single-source SPT rebuilds under lazy repair
+versus $9.0$ under eager rebuild---a $54\%$ reduction---with identical
+deadline rates (0.78) and statistically identical makespans (8{,}059 vs.\
+8{,}047 ms). Under three cascading failures lazy repair still does less
+work ($39$ vs.\ $53$ rows), though the margin narrows as more cached rows
+are eventually queried (Fig.~\ref{fig:ablation}). Ablating the
+Steiner-region candidates confirms the MST-based selection helps:
+partial's mean makespan improves from 8{,}396 to 8{,}385 ms in normal
+mode and from 17{,}123 to 17{,}077 ms under data-heavy workloads---the
+latter also below the B\&B optimum's 17{,}092 ms.
 
 \subsection{Take-aways}
 

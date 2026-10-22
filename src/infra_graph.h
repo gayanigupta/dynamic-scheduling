@@ -39,12 +39,14 @@ struct InfraGraph {
   std::vector<std::vector<int>> next_hop;     // next hop toward dest, -1 none
   long spt_updates = 0;   // number of single-source recomputations
   long path_queries = 0;  // total route queries served
+  bool eager_repair = false;  // ablation: rebuild all SPT rows per failure
 
   void build(int n_nodes, std::vector<FogNode> node_list,
              std::vector<Link> link_list);
 
   void compute_all_pairs();             // initial Floyd-Warshall
-  void fail_node(int f);                // mark dead; lazily invalidate routes
+  void fail_node(int f);                // mark dead; lazy repair, or eager
+                                        // rebuild of all rows if eager_repair
   void recompute_row(int src);          // Dijkstra from src over alive nodes
 
   // Prim's minimum spanning tree over alive nodes, weighted by link latency.

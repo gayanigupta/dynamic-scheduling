@@ -56,6 +56,13 @@ void InfraGraph::compute_all_pairs() {
 
 void InfraGraph::fail_node(int f) {
   nodes[f].alive = false;
+  if (eager_repair) {
+    // Ablation baseline: eagerly rebuild every alive source's SPT row now,
+    // equivalent to a full all-pairs recomputation of the alive graph.
+    for (int i = 0; i < n; ++i)
+      if (nodes[i].alive) recompute_row(i);
+    return;
+  }
   // No eager recomputation: cached routes that traverse f are repaired lazily
   // on the next query that touches them (incremental SPT update).
 }
