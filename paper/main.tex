@@ -21,13 +21,17 @@ available at \url{https://github.com/gayanigupta/dynamic-scheduling}.}}
 
 \author{
 \IEEEauthorblockN{Gayani Gupta\IEEEauthorrefmark{1},
-Amisha Gupta\IEEEauthorrefmark{1},
+Amisha Gupta\IEEEauthorrefmark{2},
 Mohsen Amini Salehi\IEEEauthorrefmark{1},\\
 Sanjukta Bhowmick\IEEEauthorrefmark{1} and
-Antonio\IEEEauthorrefmark{1}} % TODO: Antonio's surname
+Antonio Fern\'andez Anta\IEEEauthorrefmark{3}}
 \IEEEauthorblockA{\IEEEauthorrefmark{1}Dept.\ of Computer Science and
 Engineering, University of North Texas, USA \\
-\{gayani.gupta, amisha.gupta, mohsen.aminisalehi, sanjukta.bhowmick\}@unt.edu}
+\{gayani.gupta, mohsen.aminisalehi, sanjukta.bhowmick\}@unt.edu}
+\IEEEauthorblockA{\IEEEauthorrefmark{2}University of California,
+Berkeley, USA}
+\IEEEauthorblockA{\IEEEauthorrefmark{3}IMDEA Networks Institute,
+Madrid, Spain \\ antonio.fernandez@imdea.org}
 }
 
 \begin{document}
@@ -112,6 +116,12 @@ reconsiders unexecutable sub-plans appears in~\cite{DynamicWorkflow}; it
 re-plans a suffix of the plan rather than the minimal affected region of a
 dependency DAG. Neither line of work isolates a dependency-closed failure
 region or preserves unaffected assignments, which is the gap addressed here.
+
+Our prior work schedules DAG workflows across federated fog systems:
+\cite{gupta2025efficient} optimizes the initial task allocation, and
+\cite{gupta2025dataaware} jointly models data placement and approximate
+execution. Both assume resources stay available; this paper instead targets
+mid-execution failures and recovery of the smallest affected region.
 
 Initial partitioning builds on HEFT-style list
 scheduling~\cite{topcuoglu2002heft}; our recovery repartitioner reuses its
@@ -462,6 +472,17 @@ arXiv:1710.05239, 2017.
 Z.~Yu and W.~Shi, ``An adaptive rescheduling strategy for grid workflow
 applications,'' in \emph{Proc.\ IEEE Int.\ Parallel and Distributed
 Processing Symp.\ (IPDPS)}, 2007.
+
+\bibitem{gupta2025efficient}
+G.~Gupta, A.~Gupta, M.~Amini Salehi, A.~Fern\'andez Anta, S.~Bhowmick,
+J.~Aguilar, and M.~Kourouma, ``Towards efficient allocation of tasks in
+DAG-based workflows across federated fog systems,'' in \emph{2025 IEEE
+Cloud Summit}, 2025, pp.\ 124--129.
+
+\bibitem{gupta2025dataaware}
+G.~Gupta, A.~Gupta, M.~Amini Salehi, A.~Fern\'andez Anta, S.~Bhowmick, and
+J.~Aguilar, ``Data-aware scheduling of approximate DAG workflows in
+federated fog systems,'' manuscript under submission.
 
 \bibitem{topcuoglu2002heft}
 H.~Topcuoglu, S.~Hariri, and M.-Y. Wu, ``Performance-effective and
