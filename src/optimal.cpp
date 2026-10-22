@@ -134,7 +134,7 @@ RecoveryResult recover_optimal(Sim& s, int failed, const RecoveryParams& rp) {
     for (size_t i = 0; i < order.size(); ++i)
       r.moves.push_back({order[i], bb.best_assign[i]});
   }
-  r.tasks_considered = bb.evals;
+  r.tasks_considered = (long)sub.size();  // problem size; evals show in wall time
   r.replan_ms = rp.replan_base_ms + rp.replan_per_task_ms * sub.size();
   r.algo_wall_ms = std::chrono::duration<double, std::milli>(
                        std::chrono::steady_clock::now().time_since_epoch())
