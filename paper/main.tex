@@ -14,15 +14,20 @@
 \newtheorem{definition}{Definition}
 
 \title{Dynamic Partial Repartitioning of DAG Workflows After Resource Failures
-in Federated Fog Environments}
+in Federated Fog Environments%
+\thanks{Artifact: the simulator, scenario generators, recovery-instance
+exporter, MILP solver, evaluation scripts, and raw results are publicly
+available at \url{https://github.com/gayanigupta/dynamic-scheduling}.}}
 
 \author{
 \IEEEauthorblockN{Gayani Gupta\IEEEauthorrefmark{1},
-Mohsen Amini Salehi\IEEEauthorrefmark{1},
-Sanjukta Bhowmick\IEEEauthorrefmark{1}}
+Amisha Gupta\IEEEauthorrefmark{1},
+Mohsen Amini Salehi\IEEEauthorrefmark{1},\\
+Sanjukta Bhowmick\IEEEauthorrefmark{1} and
+Antonio\IEEEauthorrefmark{1}} % TODO: Antonio's surname
 \IEEEauthorblockA{\IEEEauthorrefmark{1}Dept.\ of Computer Science and
 Engineering, University of North Texas, USA \\
-\{gayani.gupta, mohsen.aminisalehi, sanjukta.bhowmick\}@unt.edu}
+\{gayani.gupta, amisha.gupta, mohsen.aminisalehi, sanjukta.bhowmick\}@unt.edu}
 }
 
 \begin{document}
@@ -273,15 +278,34 @@ home node and migration plus penalty otherwise.
 \label{sec:eval}
 
 \subsection{Setup}
+\label{sec:setup}
 
-Discrete-event simulation over randomly generated layered DAGs (20--150
-tasks) and connected fog topologies (10 nodes). Strategies: \textbf{partial}
-(ours), \textbf{full} repartitioning, \textbf{greedy} per-task best-EFT
-placement, \textbf{static} designated-backup, \textbf{exact B\&B} (small
-regions), and offline \textbf{MILP}. Modes: \emph{normal}, \emph{data-heavy +
-skewed} (12$\times$ edge volumes; 20\% strong nodes), and
-\emph{multi-failure} (3 failures per run). All strategies replay identical
-pre-failure states per scenario.
+Experiments run in a purpose-built discrete-event simulator (C++). Each
+scenario draws a layered DAG (layers $=\max(3, n/7)$; inter-layer edge
+probability 0.25; every non-source task guaranteed a parent) with per-task
+work 200--5000 MI, memory 64--1024 MB, migration context 0.5--15 MB, and
+per-edge data 0.5--40 MB. \emph{Data-heavy} mode scales edge volumes
+10$\times$; \emph{skewed} infrastructure concentrates high capacity on
+$\sim$20\% of nodes. The infrastructure is a connected graph of 10 nodes
+(spanning tree plus extra links at probability 0.45) with 800--4000 MIPS,
+2--16 GB memory, link latency 1--25 ms, bandwidth 100--2000 Mbps, and
+per-MB cost 0.01--0.3.
+
+A failure is injected at 30\% or 60\% of the no-failure makespan on the
+resource carrying the most remaining work; \emph{multi-failure} mode
+injects three evenly spaced failures. Deadlines equal $1.3\times$ the
+no-failure makespan. Recovery parameters: candidate shortlist $k{=}8$,
+move penalty $\lambda_{move}{=}50$ ms, replanning delay $5 + 0.5\,|S|$ ms.
+Each configuration uses 10 seeds; all strategies replay identical
+pre-failure states per scenario. Exported failure instances are solved
+offline with HiGHS through SciPy's \texttt{milp} interface. The simulator,
+generators, MILP instances, and raw CSVs are available in the artifact
+repository.
+
+Strategies compared: \textbf{partial} (ours), \textbf{full} repartitioning,
+\textbf{greedy} per-task best-EFT placement, \textbf{static}
+designated-backup, \textbf{exact B\&B} (small regions), and offline
+\textbf{MILP}.
 
 \subsection{Results}
 
