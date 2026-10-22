@@ -4,7 +4,7 @@ CXX ?= g++
 CXXFLAGS ?= -std=c++17 -O2 -Wall -Wextra -Isrc -D'_Alignof(x)=alignof(x)'
 
 SRC = src/task_graph.cpp src/infra_graph.cpp src/scheduler.cpp \
-      src/sim.cpp src/recovery.cpp src/optimal.cpp src/generators.cpp
+      src/sim.cpp src/recovery.cpp src/optimal.cpp src/generators.cpp src/milp_export.cpp
 HDR = src/task_graph.h src/infra_graph.h src/scheduler.h \
       src/sim.h src/recovery.h src/generators.h
 

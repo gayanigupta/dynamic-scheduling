@@ -9,7 +9,9 @@ namespace ds {
 TaskDAG gen_dag(std::mt19937& rng, const DagGenParams& p) {
   std::uniform_real_distribution<double> work(p.work_min, p.work_max);
   std::uniform_real_distribution<double> mem(p.mem_min, p.mem_max);
-  std::uniform_real_distribution<double> data(p.data_min, p.data_max);
+  std::uniform_real_distribution<double> data(
+      p.heavy_data ? p.data_min * 12.0 : p.data_min,
+      p.heavy_data ? p.data_max * 12.0 : p.data_max);
   std::uniform_real_distribution<double> ctx(p.ctx_min, p.ctx_max);
   std::uniform_real_distribution<double> uni(0.0, 1.0);
 
@@ -74,8 +76,16 @@ InfraGraph gen_infra(std::mt19937& rng, const InfraGenParams& p) {
   std::uniform_real_distribution<double> uni(0.0, 1.0);
 
   std::vector<FogNode> nodes(p.n_nodes);
-  for (int i = 0; i < p.n_nodes; ++i)
-    nodes[i] = {i, mips(rng), mem(rng), pb(rng), pi(rng), true};
+  int n_strong = std::max(1, p.n_nodes / 5);
+  for (int i = 0; i < p.n_nodes; ++i) {
+    double m;
+    if (p.skewed)
+      m = (i < n_strong) ? 3000.0 + (rng() % 2000)  // strong tier
+                         : 200.0 + (rng() % 600);  // weak tier
+    else
+      m = mips(rng);
+    nodes[i] = {i, m, mem(rng), pb(rng), pi(rng), true};
+  }
 
   std::vector<Link> links;
   // Spanning tree for connectivity.

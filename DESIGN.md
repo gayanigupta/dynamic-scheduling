@@ -210,6 +210,7 @@ tasks are not restarted and unaffected assignments are untouched.
 | **full** | all unfinished tasks | complete re-list-schedule over all alive resources, no stay penalty |
 | **static** | `F` | all tasks → one pre-designated backup resource |
 | **optimal** | `S` (small cases only) | branch-and-bound minimizing estimated subgraph makespan + movement penalties |
+| **milp** | `S` (small cases only) | exact MILP (assignment + big-M start-time + disjunctive ordering constraints) solved offline with HiGHS via `scipy.optimize.milp`; the C++ sim exports each failure instance to JSON (`--export-milp`) and `python/milp_recovery.py` solves it |
 
 Replanning cost is modeled as `replan_ms = base + per_task · tasks_considered`,
 so `full` pays a delay proportional to *all* unfinished tasks while `partial`
@@ -251,7 +252,47 @@ Failure is injected on a node that hosts tasks at `τ_fail = frac·makespan`.
 ```
 ./experiment --seeds 20 --tasks 20,40,60 --nodes 10 \
              --fail-fracs 0.3,0.6 --deadline-factor 1.3 --out results.csv
+
+# scenario variants
+--dag-mode heavy       # communication-dominated workflows (data x12)
+--infra-mode skewed    # ~20% strong + ~80% weak fog nodes
+--n-failures K         # K distinct resource failures per run
+--export-milp DIR      # dump recovery instance JSON for the MILP baseline
 ```
+
+MILP baseline workflow:
+```
+./experiment --export-milp milp_inst --out results_small.csv ...
+python3 python/milp_recovery.py milp_inst milp_results.csv 120
+python3 python/compare.py results_small.csv milp_results.csv
+```
+
+## Results snapshot (120 scenarios per mode, seeds=20)
+
+**Normal workload.** Full repartition wins makespan (7.76s vs 8.40s) but at
+~10x communication cost, ~3x data transferred, and ~6x the replanning scope.
+Partial matches the B&B optimum within ~0.1% and beats static by ~8% makespan
+(80% vs 60% deadline rate).
+
+**Data-heavy + skewed.** Partial edges ahead of greedy (17.12s vs 17.25s
+makespan) as boundary co-location starts paying off; full still best on
+makespan at ~5.7x the communication cost.
+
+**Multi-failure (3 failures/run).** The differentiator sharpens: partial
+moves ~10 tasks vs full's ~35, and considers 11 vs 70 tasks per run.
+Static collapses to a 7% deadline rate.
+
+**Scale sweep** — replanning problem size vs workflow size:
+
+| strategy | n=20 | n=60 | n=100 | n=150 |
+|---|---|---|---|---|
+| full | 10.3 | 33.9 | 57.9 | 87.9 |
+| partial | 2.2 | 4.2 | 5.6 | 8.4 |
+| greedy/static | 1.8 | 3.5 | 5.4 | 7.4 |
+
+`full`'s replanning scope grows linearly with workflow size; `partial`'s
+stays proportional to the failure's blast radius — the core claim of the
+method. At n=150 the replanned region is ~10x smaller.
 
 Expected hypotheses the experiments test:
 

@@ -18,6 +18,7 @@ add_library(dscore
   src/recovery.cpp
   src/optimal.cpp
   src/generators.cpp
+  src/milp_export.cpp
 )
 target_include_directories(dscore PUBLIC src)
 

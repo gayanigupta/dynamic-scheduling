@@ -15,6 +15,7 @@ struct DagGenParams {
   double mem_min = 64.0, mem_max = 1024.0;      // MB
   double data_min = 0.5, data_max = 40.0;       // MB per edge
   double ctx_min = 0.5, ctx_max = 15.0;         // MB migration context
+  bool heavy_data = false;    // data x10: communication-dominated workflows
 };
 
 struct InfraGenParams {
@@ -27,6 +28,7 @@ struct InfraGenParams {
   double cost_min = 0.01, cost_max = 0.3;   // per MB
   double pbusy_min = 15.0, pbusy_max = 60.0;
   double pidle_min = 1.0, pidle_max = 6.0;
+  bool skewed = false;  // ~20% strong nodes, ~80% weak (fog heterogeneity)
 };
 
 // Layered random DAG: every non-source task gets >=1 parent; extra edges are

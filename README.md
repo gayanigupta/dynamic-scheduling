@@ -32,7 +32,17 @@ make test
 ```
 
 Options: `--seeds N`, `--tasks a,b,c`, `--nodes N`, `--fail-fracs x,y`,
-`--deadline-factor F`, `--no-optimal`, `--seed S`, `--out FILE`.
+`--deadline-factor F`, `--no-optimal`, `--seed S`, `--out FILE`,
+`--dag-mode heavy`, `--infra-mode skewed`, `--n-failures K`,
+`--export-milp DIR`.
+
+## MILP baseline (Python, scipy/HiGHS)
+
+```sh
+./experiment --export-milp milp_inst --seeds 15 --tasks 20 --out r.csv
+python3 python/milp_recovery.py milp_inst milp_results.csv 120
+python3 python/compare.py r.csv milp_results.csv
+```
 
 Each row of the CSV is one (scenario, strategy) run with metrics: makespan,
 recovery time, tasks moved/considered, communication cost, data transferred,

@@ -4,6 +4,8 @@
 //
 // Output: one CSV row per (scenario, strategy).
 
+#include <sys/stat.h>
+
 #include <cstdio>
 #include <cstring>
 #include <functional>
@@ -12,6 +14,7 @@
 #include <vector>
 
 #include "generators.h"
+#include "milp_export.h"
 #include "recovery.h"
 #include "scheduler.h"
 #include "sim.h"
@@ -29,6 +32,10 @@ struct Config {
   bool run_optimal = true;
   std::string out = "results.csv";
   unsigned base_seed = 12345;
+  std::string export_dir;   // if set, dump MILP instances here
+  bool heavy_data = false;  // communication-dominated DAG mode
+  bool skewed_infra = false;
+  int n_failures = 1;       // failures per run (spaced across the makespan)
 };
 
 Config parse(int argc, char** argv) {
@@ -73,6 +80,14 @@ Config parse(int argc, char** argv) {
       c.out = next("--out");
     else if (a == "--seed")
       c.base_seed = std::stoul(next("--seed"));
+    else if (a == "--export-milp")
+      c.export_dir = next("--export-milp");
+    else if (a == "--dag-mode")
+      c.heavy_data = (next("--dag-mode") == "heavy");
+    else if (a == "--infra-mode")
+      c.skewed_infra = (next("--infra-mode") == "skewed");
+    else if (a == "--n-failures")
+      c.n_failures = std::stoi(next("--n-failures"));
     else {
       fprintf(stderr, "unknown arg %s\n", a.c_str());
       exit(2);
@@ -100,6 +115,7 @@ int pick_failed_node(std::mt19937& rng, const Sim& s) {
 
 int main(int argc, char** argv) {
   Config cfg = parse(argc, argv);
+  if (!cfg.export_dir.empty()) mkdir(cfg.export_dir.c_str(), 0755);
   RecoveryParams rp;
   SimParams sp;
   sp.replan_base_ms = rp.replan_base_ms;
@@ -129,8 +145,10 @@ int main(int argc, char** argv) {
         DagGenParams dp;
         dp.n_tasks = n_tasks;
         dp.n_layers = std::max(3, n_tasks / 7);
+        dp.heavy_data = cfg.heavy_data;
         InfraGenParams ip;
         ip.n_nodes = cfg.n_nodes;
+        ip.skewed = cfg.skewed_infra;
         TaskDAG dag = gen_dag(rng, dp);
         InfraGraph infra = gen_infra(rng, ip);
         InitialSchedule init = heft_schedule(dag, infra);
@@ -142,10 +160,24 @@ int main(int argc, char** argv) {
         double nofail_ms = ref.m.makespan_ms;
         double deadline = nofail_ms * cfg.deadline_factor;
 
-        // Determine the failure from a probe state.
+        // Determine the failure(s) from a probe state. With --n-failures K,
+        // K distinct hosting nodes fail at times ff, 2ff, ..., Kff (clamped).
         std::mt19937 frng(cfg.base_seed + scenario * 104729);
-        int fail_node = pick_failed_node(frng, ref);
-        double fail_time = ff * nofail_ms;
+        std::vector<std::pair<double, int>> fail_events;
+        for (int i = 0; i < cfg.n_failures; ++i) {
+          int fn = pick_failed_node(frng, ref);
+          for (int tries = 0; tries < 10; ++tries) {
+            bool dup = false;
+            for (auto& ev : fail_events)
+              if (ev.second == fn) dup = true;
+            if (!dup) break;
+            fn = pick_failed_node(frng, ref);
+          }
+          if (fn < 0) break;
+          double ft = std::min(0.95, ff * (i + 1)) * nofail_ms;
+          fail_events.push_back({ft, fn});
+        }
+        int fail_node = fail_events.empty() ? -1 : fail_events[0].second;
         ++scenario;
         if (fail_node < 0) continue;
 
@@ -164,10 +196,26 @@ int main(int argc, char** argv) {
               {"optimal",
                [&](Sim& s, int fn) { return recover_optimal(s, fn, rp); }});
 
+        // Optional: dump the MILP recovery instance(s) for this scenario.
+        if (!cfg.export_dir.empty()) {
+          Sim es;
+          es.init(dag, infra, init.assign, sp);
+          for (auto& ev : fail_events) es.inject_failure(ev.first, ev.second);
+          int fidx = 0;
+          es.on_failure = [&](Sim& s, int fn) {
+            char p[512];
+            snprintf(p, sizeof p, "%s/inst_%d_f%d.json",
+                     cfg.export_dir.c_str(), scenario, fidx++);
+            export_recovery_instance(s, fn, scenario, rp, p);
+            return recover_partial(s, fn, rp);
+          };
+          es.run();
+        }
+
         for (auto& strat : strategies) {
           Sim sim;
           sim.init(dag, infra, init.assign, sp);
-          sim.inject_failure(fail_time, fail_node);
+          for (auto& ev : fail_events) sim.inject_failure(ev.first, ev.second);
           sim.on_failure = strat.fn;
           sim.run();
           const auto& m = sim.m;
