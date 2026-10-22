@@ -102,6 +102,40 @@ void InfraGraph::recompute_row(int src) {
   next_hop[src] = nh;
 }
 
+std::vector<int> InfraGraph::mst() const {
+  // Prim's algorithm from the first alive node, weighted by link latency.
+  int src = -1;
+  for (int u = 0; u < n; ++u)
+    if (nodes[u].alive) { src = u; break; }
+  std::vector<int> out;
+  if (src < 0) return out;
+
+  std::vector<char> intree(n, 0);
+  using P = std::pair<double, int>;          // (lat, link idx)
+  std::priority_queue<P, std::vector<P>, std::greater<P>> pq;
+  int reached = 1;
+  int alive_n = 0;
+  for (auto& nd : nodes) alive_n += nd.alive;
+  auto push_adj = [&](int u) {
+    for (auto [v, li] : adj[u])
+      if (nodes[v].alive && !intree[v]) pq.push({links[li].lat_ms, li});
+  };
+  intree[src] = 1;
+  push_adj(src);
+  while (!pq.empty() && reached < alive_n) {
+    auto [w, li] = pq.top();
+    pq.pop();
+    int u = intree[links[li].a] ? links[li].b : links[li].a;
+    if (intree[u]) continue;
+    intree[u] = 1;
+    ++reached;
+    out.push_back(li);
+    push_adj(u);
+  }
+  if (reached < alive_n) out.clear();  // disconnected: no spanning tree
+  return out;
+}
+
 // Walk the cached next-hop chain i -> j. Whenever a row's cached hop is
 // missing or dead, recompute just that row's SPT (the incremental update).
 // After all intermediate rows are consistent, the source row is refreshed

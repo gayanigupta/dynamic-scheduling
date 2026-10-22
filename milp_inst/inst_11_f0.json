@@ -2,6 +2,7 @@
   "scenario": 11,
   "failed_node": 2,
   "now": 1739.762092,
+  "deadline_ms": 7538.969064,
   "tasks": [
     {"gid": 16, "work_mi": 4984.5937, "mem_mb": 218.9809, "context_mb": 8.7547, "home": 2, "home_alive": false},
     {"gid": 4, "work_mi": 3777.6780, "mem_mb": 509.9064, "context_mb": 5.6236, "home": 2, "home_alive": false}

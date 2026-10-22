@@ -51,8 +51,11 @@ schedule quality (makespan relative to the no-failure run).
 
 ## Strategies compared
 
-- `partial` — proposed method: affected-subgraph extraction, anchor-aware
-  replacement-resource shortlist, constrained repartition, lazy SPT repair
+- `partial` — proposed method: affected-subgraph extraction, Steiner-region
+  replacement candidates (MST over the anchor metric closure, Prim),
+  constrained repartition, lazy SPT repair. Built on the three canonical
+  graph primitives: APSP (Floyd-Warshall), incremental SSSP (Dijkstra),
+  MST (Prim)
 - `full` — complete repartition/reschedule of all unfinished tasks
 - `greedy` — per-task best-EFT placement of failed-node tasks
 - `static` — all failed-node tasks to one designated backup resource

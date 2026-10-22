@@ -9,7 +9,7 @@ namespace ds {
 
 bool export_recovery_instance(Sim& s, int failed, int scenario,
                               const RecoveryParams& rp,
-                              const std::string& path) {
+                              const std::string& path, double deadline_ms) {
   auto sub = affected_subgraph(s, failed, rp.expand_boundary);
   std::unordered_map<int, int> idx;  // task gid -> subgraph index
   for (size_t i = 0; i < sub.size(); ++i) idx[sub[i]] = (int)i;
@@ -34,8 +34,10 @@ bool export_recovery_instance(Sim& s, int failed, int scenario,
   if (!f) return false;
 
   fprintf(f, "{\n");
-  fprintf(f, "  \"scenario\": %d,\n  \"failed_node\": %d,\n  \"now\": %.6f,\n",
-          scenario, failed, s.now);
+  fprintf(f,
+          "  \"scenario\": %d,\n  \"failed_node\": %d,\n  \"now\": %.6f,\n"
+          "  \"deadline_ms\": %.6f,\n",
+          scenario, failed, s.now, deadline_ms);
 
   // Subgraph tasks.
   fprintf(f, "  \"tasks\": [\n");

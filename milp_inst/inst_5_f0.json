@@ -2,6 +2,7 @@
   "scenario": 5,
   "failed_node": 3,
   "now": 1205.546070,
+  "deadline_ms": 5224.032968,
   "tasks": [
   ],
   "sub_edges": [

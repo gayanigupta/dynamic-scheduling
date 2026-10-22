@@ -1,4 +1,4 @@
-CXX ?= g++
+CXX = /opt/homebrew/bin/g++-14
 # The -D_Alignof flag works around Homebrew GCC rejecting C11 _Alignof in
 # newer macOS Command Line Tools SDK headers; harmless on other platforms.
 CXXFLAGS ?= -std=c++17 -O2 -Wall -Wextra -Isrc -D'_Alignof(x)=alignof(x)'

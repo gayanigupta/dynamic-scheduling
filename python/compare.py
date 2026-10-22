@@ -37,6 +37,15 @@ def main():
             if r["status"] == "optimal":
                 milp[int(r["scenario"])] = fnum(r["est_makespan_ms"])
 
+    milp_feas = {}
+    milp_dl = {}
+    if len(sys.argv) > 2:
+        for r in read_csv(sys.argv[2]):
+            if r.get("deadline_feasible") not in ("", None):
+                milp_feas[int(r["scenario"])] = fnum(r["deadline_feasible"])
+            if r.get("deadline_ms"):
+                milp_dl[int(r["scenario"])] = fnum(r["deadline_ms"])
+
     by_strat = defaultdict(list)
     for r in rows:
         if r["completed"] == "1":
@@ -73,6 +82,20 @@ def main():
             if gaps:
                 print(f"  {s:<9} {np.mean(gaps):7.2f} +- {np.std(gaps):5.2f} "
                       f"  (n={len(gaps)})")
+
+    # Deadline feasibility on the MILP-matched instances: each strategy's
+    # simulated deadline-met rate vs the MILP optimum's (estimated).
+    if milp_feas:
+        print("\nDeadline-met rate on MILP-solved instances "
+              "(MILP = est. feasibility of the optimal recovered region):")
+        matched = sorted(milp_feas)
+        for s, rs in sorted(by_strat.items()):
+            v = [fnum(r["deadline_met"]) for r in rs
+                 if int(r["scenario"]) in milp_feas]
+            if v:
+                print(f"  {s:<9} {np.mean(v)*100:5.1f}%  (n={len(v)})")
+        print(f"  MILP      {np.mean(list(milp_feas.values()))*100:5.1f}%  "
+              f"(n={len(milp_feas)})")
 
     # Completion / deadline rates incl. failures.
     allr = read_csv(sys.argv[1])

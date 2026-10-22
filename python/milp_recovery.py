@@ -230,21 +230,26 @@ def main():
     with open(out, "w", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(["instance", "scenario", "n_sub", "n_cand", "status",
-                    "est_makespan_ms", "objective", "mip_gap", "wall_s",
-                    "assign"])
+                    "est_makespan_ms", "deadline_ms", "deadline_feasible",
+                    "objective", "mip_gap", "wall_s", "assign"])
         for path in files:
             inst = load_instance(path)
             name = os.path.basename(path)
+            deadline = float(inst.get("deadline_ms", -1))
             if len(inst["tasks"]) > 15:
                 w.writerow([name, inst["scenario"], len(inst["tasks"]),
                             len(inst["candidates"]), "skipped_too_large",
-                            "", "", "", "", ""])
+                            "", deadline, "", "", "", "", ""])
                 print(f"{name}: skipped ({len(inst['tasks'])} tasks)")
                 continue
             r = build_and_solve(inst, time_limit=limit)
+            feasible = ""
+            if r["status"] == "optimal" and deadline > 0:
+                feasible = int(r["est_ms"] <= deadline + 1e-6)
             w.writerow([name, inst["scenario"], len(inst["tasks"]),
                         len(inst["candidates"]), r["status"],
-                        r["est_ms"], r["obj"], r.get("gap", ""),
+                        r["est_ms"], deadline, feasible,
+                        r["obj"], r.get("gap", ""),
                         r.get("wall_s", ""), ";".join(map(str, r["assign"]))])
             print(f"{name}: {r['status']} est={r['est_ms']:.1f} "
                   f"wall={r.get('wall_s', 0):.2f}s")

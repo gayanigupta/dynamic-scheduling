@@ -272,6 +272,71 @@ def main():
         ax.grid(alpha=0.3)
         save(fig, "fig12_tradeoff_scatter.png")
 
+    # ---- Fig 13: deadline-factor sensitivity sweep ----------------------
+    factors = [("0.9", 0.9), ("1.0", 1.0), ("1.1", 1.1),
+               ("1.3", 1.3), ("1.6", 1.6)]
+    dls = {}
+    for tag, f in factors:
+        rows = read(f"results_dl_{tag}.csv")
+        if not rows:
+            continue
+        dls[f] = {}
+        for r in rows:
+            if r["completed"] == "1":
+                dls[f].setdefault(r["strategy"], []).append(
+                    fnum(r["deadline_met"]))
+    if dls:
+        fig, ax = plt.subplots(figsize=(6, 4))
+        xs = sorted(dls)
+        for s in ORDER:
+            ys = [np.mean(dls[f].get(s, [np.nan])) * 100 for f in xs]
+            ax.plot(xs, ys, marker="o", ms=4, lw=1.5,
+                    label=LABEL[s], color=COLOR[s])
+        ax.set_xlabel("Deadline (x no-failure makespan)")
+        ax.set_ylabel("Deadline met (%)")
+        ax.set_title("Deadline sensitivity of recovery strategies")
+        ax.legend(fontsize=8)
+        ax.grid(alpha=0.3)
+        save(fig, "fig13_deadline_sweep.png")
+
+    # ---- Fig 14: algorithmic ablation -----------------------------------
+    ns = read("results_nosteiner.csv")
+    nsh = read("results_nosteiner_heavy.csv")
+    if ns and normal:
+        fig, axs = plt.subplots(1, 2, figsize=(9, 3.4))
+        on, off = [], []
+        for with_st, no_st in ((normal, ns), (heavy, nsh)):
+            on.append(np.mean([fnum(r["makespan_ms"]) for r in with_st
+                               if r["strategy"] == "partial"
+                               and r["completed"] == "1"]))
+            off.append(np.mean([fnum(r["makespan_ms"]) for r in no_st
+                                if r["strategy"] == "partial"
+                                and r["completed"] == "1"]))
+        xs = np.arange(2)
+        axs[0].bar(xs - 0.17, on, 0.32, label="MST/Steiner region",
+                   color=COLOR["partial"], edgecolor="black", linewidth=0.4)
+        axs[0].bar(xs + 0.17, off, 0.32, label="shortlist only",
+                   color="grey", edgecolor="black", linewidth=0.4)
+        axs[0].set_xticks(xs)
+        axs[0].set_xticklabels(["Normal", "Heavy+skewed"])
+        axs[0].set_ylabel("Makespan (ms)")
+        axs[0].set_title("Steiner-region candidates (MST) on vs off")
+        axs[0].legend(fontsize=8)
+        axs[0].grid(axis="y", alpha=0.3)
+
+        upd = np.mean([fnum(r["spt_updates"]) for r in normal
+                       if r["strategy"] == "partial"
+                       and r["completed"] == "1"])
+        axs[1].bar([0, 1], [upd, 10], 0.5,
+                   color=[COLOR["partial"], "grey"],
+                   edgecolor="black", linewidth=0.4)
+        axs[1].set_xticks([0, 1])
+        axs[1].set_xticklabels(["Lazy SSSP\n(ours)", "Full APSP\nrebuild"])
+        axs[1].set_ylabel("SPT rows recomputed per failure")
+        axs[1].set_title("Incremental vs full route repair")
+        axs[1].grid(axis="y", alpha=0.3)
+        save(fig, "fig14_ablation.png")
+
 
 if __name__ == "__main__":
     main()

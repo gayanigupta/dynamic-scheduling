@@ -47,6 +47,10 @@ struct InfraGraph {
   void fail_node(int f);                // mark dead; lazily invalidate routes
   void recompute_row(int src);          // Dijkstra from src over alive nodes
 
+  // Prim's minimum spanning tree over alive nodes, weighted by link latency.
+  // Returns indices into `links`; empty if the alive graph is disconnected.
+  std::vector<int> mst() const;
+
   bool alive(int u) const { return nodes[u].alive; }
 
   // Latency (ms) of the route i -> j; INF if unreachable/dead. Lazily repairs

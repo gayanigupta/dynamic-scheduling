@@ -158,6 +158,34 @@ static void test_affected_boundary() {
          sub_exp.size());
 }
 
+static void test_mst() {
+  // small_infra: links 0-1(2), 1-3(2), 0-2(5), 2-3(5), 1-2(1).
+  // MST must pick 1-2(1), 0-1(2), 1-3(2) = weight 5, n-1 links.
+  auto g = small_infra();
+  auto tree = g.mst();
+  assert(tree.size() == 3);
+  double w = 0.0;
+  // Union-Find over the chosen links: must connect every node (a real tree).
+  int par[4] = {0, 1, 2, 3};
+  auto find = [&](int x) {
+    while (par[x] != x) x = par[x];
+    return x;
+  };
+  for (int li : tree) {
+    w += g.links[li].lat_ms;
+    par[find(g.links[li].a)] = find(g.links[li].b);
+  }
+  assert(w == 5.0);
+  for (int u = 0; u < 4; ++u) assert(find(u) == find(0));
+
+  g.fail_node(1);  // alive graph {0,2,3}: MST = 0-2(5), 2-3(5) -> weight 10
+  auto t2 = g.mst();
+  double w2 = 0.0;
+  for (int li : t2) w2 += g.links[li].lat_ms;
+  assert(t2.size() == 2 && w2 == 10.0);
+  printf("ok mst (w=%.0f, after failure w=%.0f)\n", w, w2);
+}
+
 static void test_determinism() {
   std::mt19937 rng(42);
   DagGenParams dp;
@@ -180,6 +208,7 @@ int main() {
   test_heft_and_sim();
   test_failure_partial();
   test_affected_boundary();
+  test_mst();
   test_determinism();
   printf("all tests passed\n");
   return 0;

@@ -153,8 +153,19 @@ score(c) = Σ_{(a→t), t∈S, a∉S} d(a,t)·lat(node(a), c)          // parent
          + ε · avail(c)                                        // spare capacity
 ```
 
-`C` = top-`k` resources by score (default `k = 4`), **plus** the nodes already
-hosting healthy members of `S` (the "stay" option).
+`C` = the **Steiner region** `R`, plus top-`k` resources by score (default
+`k = 8`), plus the nodes already hosting healthy members of `S` (the "stay"
+option).
+
+`R` is an approximate Steiner tree over the anchor nodes: build the metric
+closure of anchor resources (edge weight = route latency), take its MST
+(Prim), and expand each selected edge back into its real route. The nodes of
+that tree form a low-latency connected island around the anchors, so
+repartitioned tasks cluster near their unmoved neighbors.
+
+The recovery path therefore exercises the three canonical graph problems:
+APSP (Floyd–Warshall at init), incremental SSSP (Dijkstra lazy repair), and
+MST (Prim for the replacement region).
 
 ### 4.4 Step 4 — Repartition `S` onto `C`
 

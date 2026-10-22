@@ -13,6 +13,7 @@ namespace ds {
 // candidate nodes, and pairwise route latency/bandwidth.
 bool export_recovery_instance(Sim& s, int failed, int scenario,
                               const RecoveryParams& rp,
-                              const std::string& path);
+                              const std::string& path,
+                              double deadline_ms = -1.0);
 
 }  // namespace ds

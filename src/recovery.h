@@ -10,6 +10,7 @@ struct RecoveryParams {
   // when ALL of its unfinished parents are already in the subgraph (it
   // "follows" the failure); the repartitioner may still leave it in place.
   bool expand_boundary = true;
+  bool use_steiner = true;       // MST/Steiner-region replacement candidates
   int max_candidates = 8;        // replacement resources shortlisted
   double move_penalty_ms = 50.0; // extra cost of moving a healthy-node task
   // --- replanning cost model ---
