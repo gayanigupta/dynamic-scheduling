@@ -92,7 +92,8 @@ dependency-consistent region of the task DAG that is affected, (b)~reassigns
 only that region to shortlisted replacement resources chosen by proximity to
 the region's unmoved neighbors, and (c)~repairs only the communication paths
 that actually traverse the failure, using incremental single-source shortest
-path updates rather than a full all-pairs rebuild~\cite{bhowmick2019}.
+path updates rather than a full all-pairs rebuild~\cite{bhowmick2019}
+(Fig.~\ref{fig:overview}).
 
 Contributions:
 \begin{itemize}
@@ -114,6 +115,18 @@ Contributions:
         (Sections~\ref{sec:milp}--\ref{sec:eval}).
 \end{itemize}
 
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/fig0_overview.png}
+\caption{Partial repartitioning after a resource failure. Top: the
+resource (infrastructure) graph; node B fails and communication is
+rerouted over surviving links. Bottom: the task DAG partitioned across
+resources. Only the affected region---unfinished tasks T2 and T4 on
+B---is repartitioned (T2$\to$C, T4$\to$D); completed task T1 and
+unaffected tasks T3, T5, T6 keep their assignments and staged data.}
+\label{fig:overview}
+\end{figure*}
+
 \section{Related Work}
 
 Dynamic shortest-path maintenance on evolving graphs has been studied
@@ -122,6 +135,20 @@ incrementally when edges change, avoiding full recomputation. To our
 knowledge this technique has not been applied to communication-path repair
 after fog-resource failures; we adapt the idea to lazily repair only the
 routes that post-failure traffic actually uses.
+
+Fog and edge \emph{federation formation} is a complementary line of work.
+Hammoud et al.~\cite{hammoud2022federation} form adaptive fog federations
+for vehicular networks through a hedonic coalition game with
+merge-and-split reorganization as mobility changes service demand.
+Xu et al.~\cite{xu2022edgefed} federate edge resources across
+administrative domains via network slicing and a hierarchical federated
+ledger. Hussain and Amini Salehi~\cite{hussain2024serverless} federate
+nearby fog systems to give remote Industry-4.0 sites cloud-like
+elasticity, and MicroFog~\cite{microfog2023} places microservice-based IoT
+applications across federated fog clusters. These works decide which
+resources join a federation and where services are placed; membership
+changes are handled at formation or placement time, and none repairs an
+in-flight workflow partition when a member fails mid-execution.
 
 Task redistribution when fog resources join or leave was studied
 in~\cite{DynamicFog}; it migrates load but does not repartition a workflow
@@ -760,6 +787,28 @@ TPDS}, 13(3), 2002.
 H.~Gupta, A.~Vahid Dastjerdi, S.~K. Ghosh, and R.~Buyya, ``iFogSim: A toolkit
 for modeling and simulation of resource management techniques in IoT, edge
 and fog computing environments,'' \emph{Softw.\ Pract.\ Exp.}, 2017.
+
+\bibitem{hammoud2022federation}
+A.~Hammoud, M.~Kantardjian, A.~Najjar, A.~Mourad, H.~Otrok, and
+Z.~Dziong, ``Dynamic fog federation scheme for Internet of Vehicles,''
+\emph{IEEE Trans.\ Netw.\ Service Manag.}, 2022,
+doi:10.1109/TNSM.2022.3217972.
+
+\bibitem{xu2022edgefed}
+R.~Xu, Y.~Chen, X.~Li, and E.~Blasch, ``A secure dynamic edge resource
+federation architecture for cross-domain IoT systems,''
+arXiv:2208.01466, 2022.
+
+\bibitem{hussain2024serverless}
+R.~F.~Hussain and M.~Amini Salehi, ``Resource allocation of Industry 4.0
+micro-service applications across serverless fog federation,''
+arXiv:2401.07194, 2024.
+
+\bibitem{microfog2023}
+S.~Pallewatta, V.~Kostakos, and R.~Buyya, ``MicroFog: A framework for
+scalable placement of microservices-based IoT applications in federated
+fog environments,'' \emph{J.\ Syst.\ Softw.}, 2023, art.~111910,
+doi:10.1016/j.jss.2023.111910.
 \end{thebibliography}
 
 \end{document}
