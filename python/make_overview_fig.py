@@ -38,10 +38,10 @@ def link(ax, p0, p1, color=GREY, lw=1.3, ls="-", rad=0.0, arrow=False,
                  shrinkA=sh, shrinkB=sh))
 
 
-def part_box(ax, x, y, w, h, color):
+def part_box(ax, x, y, w, h, color, edge=RED):
     ax.add_patch(FancyBboxPatch((x - w / 2, y - h / 2), w, h,
                  boxstyle="round,pad=1.5", facecolor=color, alpha=0.22,
-                 edgecolor=RED, linewidth=2.2,
+                 edgecolor=edge, linewidth=2.2,
                  linestyle=":", zorder=1))
 
 
@@ -148,11 +148,11 @@ plabel(ax, 143, 47, "Partition A\n(resource A)", "l")
 
 # T2 joins Partition C (with T3), T4 joins Partition D (with T5):
 # partitions unchanged, only task assignment changed
-part_box(ax, 150, 38, 44, 11, GREEN)
+part_box(ax, 150, 38, 44, 11, GREEN, edge=BLUE)
 node(ax, 136, 38, "T2", fc=C_NEW, ec=BLUE)
 node(ax, 164, 38, "T3", fc=C_OK, ec=GREEN)
 plabel(ax, 173, 38, "Partition C\n(resource C)", "r")
-part_box(ax, 150, 23, 44, 11, GREEN)
+part_box(ax, 150, 23, 44, 11, GREEN, edge=BLUE)
 node(ax, 136, 23, "T4", fc=C_NEW, ec=BLUE)
 node(ax, 164, 23, "T5", fc=C_OK, ec=GREEN)
 plabel(ax, 173, 23, "Partition D\n(resource D)", "r")
