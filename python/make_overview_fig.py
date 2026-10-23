@@ -40,8 +40,8 @@ def link(ax, p0, p1, color=GREY, lw=1.3, ls="-", rad=0.0, arrow=False,
 
 def part_box(ax, x, y, w, h, color):
     ax.add_patch(FancyBboxPatch((x - w / 2, y - h / 2), w, h,
-                 boxstyle="round,pad=1.5", facecolor=color, alpha=0.13,
-                 edgecolor=color, linewidth=1.2, linestyle=(0, (4, 3)),
+                 boxstyle="round,pad=1.5", facecolor=color, alpha=0.22,
+                 edgecolor=color, linewidth=1.6, linestyle=":",
                  zorder=1))
 
 
@@ -64,7 +64,7 @@ ax.text(150, 107, "After failure and repair", ha="center", fontsize=FS_T,
         fontweight="bold")
 ax.text(1, 84, "Resource\ngraph", ha="left", va="center", fontsize=FS_L,
         fontweight="bold")
-ax.text(1, 17, "Task DAG\nand resource\npartitions", ha="left", va="center",
+ax.text(1, 17, "Task graph\nsplit into\npartitions", ha="left", va="center",
         fontsize=FS_L, fontweight="bold")
 
 # ---------------- left: resource graph ----------------
