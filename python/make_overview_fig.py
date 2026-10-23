@@ -41,8 +41,8 @@ def link(ax, p0, p1, color=GREY, lw=1.3, ls="-", rad=0.0, arrow=False,
 def part_box(ax, x, y, w, h, color):
     ax.add_patch(FancyBboxPatch((x - w / 2, y - h / 2), w, h,
                  boxstyle="round,pad=1.5", facecolor=color, alpha=0.22,
-                 edgecolor=RED, linewidth=2.0,
-                 linestyle=(0, (6, 2.5)), zorder=1))
+                 edgecolor=RED, linewidth=2.2,
+                 linestyle=":", zorder=1))
 
 
 def plabel(ax, x_edge, y, text, side, color="#333333"):
