@@ -58,11 +58,11 @@ outside it, and that incremental path repair terminates with correct
 shortest paths at bounded per-query cost. We evaluate the method in a
 custom discrete-event simulator
 against full repartitioning, greedy reallocation, a static backup plan, an
-exact branch-and-bound solver, and a MILP model solved with HiGHS. Across 120
-scenarios, partial repartitioning considers $6\times$ fewer tasks than full
-repartitioning, moves $3\times$ fewer tasks, and reduces communication cost by
-an order of magnitude, while retaining a makespan within $8\%$ of full
-repartitioning and within $0.1\%$ of the exact optimum on small instances,
+exact branch-and-bound solver, and a MILP model solved with HiGHS. Across 240
+scenarios, partial repartitioning considers $7\times$ fewer tasks than full
+repartitioning, moves $3.5\times$ fewer tasks, and reduces communication
+cost by $12\times$, while retaining a makespan within $7\%$ of full
+repartitioning and within $0.2\%$ of the exact optimum on small instances,
 and meeting deadlines at the optimum's rate at every deadline tightness.
 As workflow size grows, the replanned region stays proportional to the
 failure's blast radius---about $10\times$ smaller than full repartitioning
@@ -111,7 +111,7 @@ Contributions:
         (Section~\ref{sec:paths}), with formal minimality, non-disruption,
         correctness, and work-bound guarantees (Section~\ref{sec:analysis}).
   \item A MILP formulation of optimal recovery and an empirical comparison
-        against four baselines over 495 simulated scenarios
+        against four baselines over 2{,}800 simulated scenarios
         (Sections~\ref{sec:milp}--\ref{sec:eval}).
 \end{itemize}
 
@@ -539,7 +539,7 @@ resource carrying the most remaining work; \emph{multi-failure} mode
 injects three evenly spaced failures. Deadlines equal $1.3\times$ the
 no-failure makespan. Recovery parameters: candidate shortlist $k{=}8$,
 move penalty $\lambda_{move}{=}50$ ms, replanning delay $5 + 0.5\,|S|$ ms.
-Each configuration uses 10 seeds; all strategies replay identical
+Each configuration uses 30--45 seeds; all strategies replay identical
 pre-failure states per scenario. Exported failure instances are solved
 offline with HiGHS through SciPy's \texttt{milp} interface. The simulator,
 generators, MILP instances, and raw CSVs are available in the artifact
@@ -557,7 +557,7 @@ designated-backup, \textbf{exact B\&B} (small regions), and offline
 \includegraphics[width=\columnwidth]{figures/fig1_makespan.png}
 \caption{Makespan by strategy and workload mode. Full repartitioning is
 lowest but at the disruption cost shown in Fig.~\ref{fig:disruption};
-partial stays within $\sim$8\% of it while recovering a fraction of the
+partial stays within $\sim$7\% of it while recovering a fraction of the
 workflow.}
 \label{fig:makespan}
 \end{figure}
@@ -580,14 +580,14 @@ problem size (right).}
 \end{figure}
 
 Table~\ref{tab:normal} and Fig.~\ref{fig:makespan} summarize the normal
-mode. Partial repartitioning retains 99\% of the exact solver's schedule
-quality while considering $\sim$6$\times$ fewer tasks than full
-repartitioning and moving $\sim$3$\times$ fewer. Communication cost drops
-an order of magnitude because intact routes and assignments are preserved.
+mode. Partial repartitioning retains 99.8\% of the exact solver's schedule
+quality while considering $\sim$7$\times$ fewer tasks than full
+repartitioning and moving $\sim$3.5$\times$ fewer. Communication cost
+drops $12\times$ because intact routes and assignments are preserved.
 
 \begin{table}[t]
 \centering
-\caption{Normal mode, 120 scenarios (means $\pm$ std)}
+\caption{Normal mode, 240 scenarios (means)}
 \label{tab:normal}
 \small
 \setlength{\tabcolsep}{4pt}
@@ -595,11 +595,11 @@ an order of magnitude because intact routes and assignments are preserved.
 \toprule
 Strategy & Makespan & Moved & Scope & Comm.\ cost \\
 \midrule
-static  & 9053 & 3.0 & 3.0  & 13.1 \\
-greedy  & 8386 & 3.0 & 3.0  & 13.1 \\
-full    & 7762 & 10.1 & 19.5 & 196.9 \\
-partial & \textbf{8385} & \textbf{3.1} & \textbf{3.4} & \textbf{19.9} \\
-B\&B    & 8384 & 3.0 & 3.4 & 14.9 \\
+static  & 8565 & 2.5 & 2.5  & 10.8 \\
+greedy  & 8217 & 2.5 & 2.5  & 10.8 \\
+full    & 7664 & 9.3 & 19.2 & 177.4 \\
+partial & \textbf{8215} & \textbf{2.6} & \textbf{2.7} & \textbf{14.7} \\
+B\&B    & 8198 & 2.5 & 2.7 & 13.9 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -609,7 +609,7 @@ B\&B    & 8384 & 3.0 & 3.4 & 14.9 \\
 \includegraphics[width=\columnwidth]{figures/fig11_multifail.png}
 \caption{Cascaded failures (3 per run): makespan and tasks migrated. Partial
 repartitioning bounds the cumulative disruption of repeated failures; the
-static fallback misses 93\% of deadlines.}
+static fallback misses 96\% of deadlines.}
 \label{fig:multifail}
 \end{figure}
 
@@ -621,13 +621,13 @@ static fallback misses 93\% of deadlines.}
 \end{figure}
 
 Under cascaded failures (Table~\ref{tab:multi} and Fig.~\ref{fig:multifail})
-the separation widens: partial moves 10 tasks and replans 11, versus 35 and
-70 for full repartitioning, and the static fallback meets only 7\% of
-deadlines (Fig.~\ref{fig:deadline}).
+the separation widens: partial moves 10.5 tasks and replans 11.6, versus
+34.3 and 70.1 for full repartitioning, and the static fallback meets only
+4\% of deadlines (Fig.~\ref{fig:deadline}).
 
 \begin{table}[t]
 \centering
-\caption{Multi-failure mode, 3 failures/run, 15 scenarios}
+\caption{Multi-failure mode, 3 failures/run, 45 scenarios}
 \label{tab:multi}
 \small
 \setlength{\tabcolsep}{4pt}
@@ -635,11 +635,11 @@ deadlines (Fig.~\ref{fig:deadline}).
 \toprule
 Strategy & Makespan & Moved & Scope & Dl.\ met\% \\
 \midrule
-static  & 12665 & 8.7 & 8.7 & 7 \\
-greedy  & 10558 & 8.8 & 8.8 & 33 \\
-full    & 9323  & 34.8 & 70.5 & 62 \\
-partial & 10921 & 10.2 & 11.1 & 33 \\
-B\&B    & 10600 & 9.4 & 10.9 & 42 \\
+static  & 12893 & 9.6 & 9.6 & 4 \\
+greedy  & 10153 & 9.5 & 9.5 & 28 \\
+full    & 8757  & 34.3 & 70.1 & 65 \\
+partial & 10314 & 10.5 & 11.6 & 27 \\
+B\&B    & 10330 & 10.0 & 11.3 & 26 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -657,10 +657,10 @@ repartitioning improves feasibility, at $3\times$ the migrations.}
 
 Fig.~\ref{fig:dlsweep} sweeps the deadline from $0.9\times$ to
 $1.6\times$ the no-failure makespan. Partial repartitioning meets deadlines
-at essentially the rate of the exact B\&B recovery at every factor (78\%
-vs.\ 78\% at $1.3\times$) --- its deadline feasibility is optimal within
+at essentially the rate of the exact B\&B recovery at every factor (83\%
+vs.\ 83\% at $1.3\times$) --- its deadline feasibility is optimal within
 the affected-region constraint. Only full repartitioning exceeds this rate
-(92\%), by paying $3\times$ more migrations and $10\times$ more
+(94\%), by paying $3.5\times$ more migrations and $12\times$ more
 communication cost. On the 28 MILP-solved instances, the optimal recovered
 region meets the deadline in every case as an estimated bound, versus 75\%
 simulated for partial and greedy, 71\% for B\&B, and 57\% for static ---
@@ -701,27 +701,29 @@ three failures.}
 We measured route-repair work by rerunning every scenario with eager
 repair enabled: on each failure, all alive source rows are rebuilt
 immediately (the eager equivalent of a full APSP recompute). A single
-failure triggers $4.2$ single-source SPT rebuilds under lazy repair
-versus $9.0$ under eager rebuild---a $54\%$ reduction---with identical
-deadline rates (0.78) and statistically identical makespans (8{,}059 vs.\
-8{,}047 ms). Under three cascading failures lazy repair still does less
-work ($39$ vs.\ $53$ rows), though the margin narrows as more cached rows
+failure triggers $3.9$ single-source SPT rebuilds under lazy repair
+versus $9.0$ under eager rebuild---a $57\%$ reduction---with identical
+deadline rates (0.85) and statistically identical makespans (8{,}215 vs.\
+8{,}213 ms). Under three cascading failures lazy repair still does less
+work ($54$ vs.\ $70$ rows), though the margin narrows as more cached rows
 are eventually queried (Fig.~\ref{fig:ablation}). Ablating the
-Steiner-region candidates confirms the MST-based selection helps:
-partial's mean makespan improves from 8{,}396 to 8{,}385 ms in normal
-mode and from 17{,}123 to 17{,}077 ms under data-heavy workloads---the
-latter also below the B\&B optimum's 17{,}092 ms.
+Steiner-region candidates shows the constraint is conservative: without
+it, partial's mean makespan is statistically unchanged (8{,}212 vs.\
+8{,}215 ms normal; 17{,}668 vs.\ 17{,}667 ms heavy---differences under
+0.03\%). The data-weighted shortlist already prefers anchor-adjacent
+resources, so in these workloads the Steiner region's role is bounding
+the candidate set rather than changing the outcome.
 
 \subsection{Take-aways}
 
 \begin{itemize}
-  \item Partial repartitioning recovers with $\sim$99\% of the exact
-        solver's schedule quality while replanning $\sim$6$\times$ fewer
-        tasks and migrating $\sim$3$\times$ fewer than full repartitioning.
+  \item Partial repartitioning recovers with $\sim$99.8\% of the exact
+        solver's schedule quality while replanning $\sim$7$\times$ fewer
+        tasks and migrating $\sim$3.5$\times$ fewer than full repartitioning.
   \item Its deadline feasibility tracks the exact optimum at every deadline
         tightness; only global rescheduling improves feasibility, at
-        $3\times$ the migrations and $10\times$ the communication cost.
-  \item The static fallback is unsafe under deadline pressure (7\% success
+        $3.5\times$ the migrations and $12\times$ the communication cost.
+  \item The static fallback is unsafe under deadline pressure (4\% success
         under cascaded failures); doing nothing is not an option.
   \item The advantage compounds with scale, data intensity, and failure
         count: the replanned region grows with the blast radius, not the
