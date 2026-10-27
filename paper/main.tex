@@ -284,6 +284,22 @@ A failure of resource $f$ is injected at time $\tau_{fail}$. The recovery
 method runs while healthy resources keep executing; redeployed tasks become
 runnable after a replanning delay plus per-task migration time.
 
+\emph{Edge cases.} The semantics above cover the boundary conditions a
+recovery method must survive. If no feasible replacement exists for an
+affected task---capacity exhausted or the infrastructure partitioned---the
+run is recorded as aborted rather than silently producing an invalid
+schedule. If a second failure strikes a replacement resource before its new
+tasks start, recovery is re-invoked for that failure, so the affected region
+is recomputed against the post-failure state rather than a stale snapshot;
+tasks already migrated onto the failed replacement revert to waiting and are
+re-covered by the next invocation. If the failed resource staged the only
+copy of a finished parent's output, consumers source the data from the
+durable store at its higher latency instead of re-executing the parent. A
+failure with no affected region (all tasks on $f$ complete, or $f$ hosts
+nothing) costs nothing beyond route repair. These cases are exercised by
+the multi-failure and failure-timing experiments in
+Section~\ref{sec:eval}.
+
 \section{Identifying the Affected Region}
 \label{sec:affected}
 
@@ -637,6 +653,19 @@ the separation widens: partial moves 10.5 tasks and replans 11.6, versus
 34.3 and 70.1 for full repartitioning, and the static fallback meets only
 4\% of deadlines (Fig.~\ref{fig:deadline}).
 
+\emph{Failure timing.} We also sweep the injection point over 10\%, 50\%,
+and 90\% of the no-failure makespan (90 scenarios per point). The timing
+changes which strategy is preferable, not whether partial recovery works:
+at 10\%---early enough that most of the workflow is still unexecuted---full
+repartitioning meets 90\% of deadlines versus 69\% for partial, because a
+global re-plan legitimately reshuffles work that has barely begun. At 50\%
+the gap narrows to 97\% vs.\ 93\%, and at 90\% all strategies converge to
+94\% while partial still moves only 0.6 tasks against full's 0.8. The
+boundary is therefore clear: partial repartitioning is the right recovery
+once the workflow is mid-flight and completed or running work is worth
+preserving; very early failures are the regime where global replanning
+still pays.
+
 \begin{table}[t]
 \centering
 \caption{Multi-failure mode, 3 failures/run, 45 scenarios}
@@ -740,6 +769,12 @@ the candidate set rather than changing the outcome.
   \item The advantage compounds with scale, data intensity, and failure
         count: the replanned region grows with the blast radius, not the
         workflow.
+  \item Recovery decisions are fast in absolute terms: measured planner
+        wall time is 0.19\,ms for partial versus 1.36\,ms for full
+        repartitioning under a single failure (0.57\,ms vs 3.31\,ms under
+        three), while exact branch-and-bound averages 182\,ms and reaches
+        12.4\,s---three to five orders of magnitude too slow for online
+        recovery.
 \end{itemize}
 
 \subsection{Threats to validity}

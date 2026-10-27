@@ -16,11 +16,12 @@ RED = "#c62828"
 BLUE = "#1565c0"
 GREEN = "#2e7d32"
 GREY = "#555555"
+LW = 1.4
 
 
 def node(ax, x, y, label, r=5.5, fc="#d9dce0", ec="black", check=False):
     ax.add_patch(Circle((x, y), r, facecolor=fc, edgecolor=ec,
-                        linewidth=1.1, zorder=3))
+                        linewidth=LW, zorder=3))
     ax.text(x, y + 0.3, label, ha="center", va="center", fontsize=FS,
             zorder=4)
     if check:
@@ -28,7 +29,7 @@ def node(ax, x, y, label, r=5.5, fc="#d9dce0", ec="black", check=False):
                 fontsize=FS + 1, zorder=4)
 
 
-def link(ax, p0, p1, color=GREY, lw=1.3, ls="-", rad=0.0, arrow=False,
+def link(ax, p0, p1, color=GREY, lw=LW, ls="-", rad=0.0, arrow=False,
          sh=7.5):
     ax.add_patch(FancyArrowPatch(p0, p1, connectionstyle=f"arc3,rad={rad}",
                  arrowstyle="-|>" if arrow else "-", mutation_scale=9,
@@ -39,7 +40,7 @@ def link(ax, p0, p1, color=GREY, lw=1.3, ls="-", rad=0.0, arrow=False,
 def part_box(ax, x, y, w, h, color, edge=RED):
     ax.add_patch(FancyBboxPatch((x - w / 2, y - h / 2), w, h,
                  boxstyle="round,pad=1.4", facecolor=color, alpha=0.18,
-                 edgecolor=edge, linewidth=1.8,
+                 edgecolor=edge, linewidth=LW,
                  linestyle=":", zorder=1))
 
 
@@ -70,23 +71,23 @@ for k in ("A", "C", "D", "E"):
 node(ax, *res["B"], "B", r=7, fc=C_AFF, ec=RED)
 ax.annotate("B fails", xy=(59, 90), xytext=(64, 97),
             color=RED, fontsize=FS, ha="left",
-            arrowprops=dict(arrowstyle="-|>", color=RED, lw=1.1))
+            arrowprops=dict(arrowstyle="-|>", color=RED, lw=LW))
 
 # ---------------- resource graph (right) ----------------
 res2 = {k: (x + 100, y) for k, (x, y) in res.items()}
 for u, v in [("A", "B"), ("B", "C"), ("B", "D")]:
-    link(ax, res2[u], res2[v], lw=1.1, color=RED, ls=(0, (3, 3)))
+    link(ax, res2[u], res2[v], lw=LW, color=RED, ls=(0, (3, 3)))
 link(ax, res2["D"], res2["E"])
-link(ax, res2["A"], res2["C"], rad=-0.3, lw=1.6, color=BLUE, arrow=True)
-link(ax, res2["C"], res2["D"], lw=1.6, color=BLUE, arrow=True)
+link(ax, res2["A"], res2["C"], rad=-0.3, lw=LW, color=BLUE, arrow=True)
+link(ax, res2["C"], res2["D"], lw=LW, color=BLUE, arrow=True)
 for k in ("A", "C", "D", "E"):
     node(ax, *res2[k], k, r=7)
 ax.add_patch(Circle(res2["B"], 7, facecolor=C_AFF, edgecolor=RED,
                     lw=1.1, zorder=3))
 bx, by = res2["B"]
-ax.plot([bx - 5.5, bx + 5.5], [by - 5.5, by + 5.5], color=RED, lw=1.6,
+ax.plot([bx - 5.5, bx + 5.5], [by - 5.5, by + 5.5], color=RED, lw=LW,
         zorder=4)
-ax.plot([bx - 5.5, bx + 5.5], [by + 5.5, by - 5.5], color=RED, lw=1.6,
+ax.plot([bx - 5.5, bx + 5.5], [by + 5.5, by - 5.5], color=RED, lw=LW,
         zorder=4)
 ax.text(144, 93, "B failed", color=RED, fontsize=FS, ha="right")
 ax.text(198, 102, "routes rerouted\nover surviving links", color=BLUE,
@@ -125,11 +126,11 @@ link(ax, (70, 17.5), (60, 13.5), arrow=True, sh=6)
 
 ax.add_patch(FancyArrowPatch((58, 61), (32, 39),
              connectionstyle="arc3,rad=0.35", arrowstyle="-|>",
-             mutation_scale=9, color=RED, lw=1.1,
+             mutation_scale=9, color=RED, lw=LW,
              linestyle=(0, (4, 3))))
 
 ax.add_patch(FancyArrowPatch((84, 28), (97, 28), arrowstyle="-|>",
-             mutation_scale=14, color="black", lw=2.6))
+             mutation_scale=16, color="black", lw=LW))
 ax.text(90.5, 47, "repartition\naffected tasks\nonly", ha="center",
         fontsize=FS - 1.5)
 
@@ -169,12 +170,12 @@ handles = [
            markeredgecolor=BLUE, markersize=8, label="Reassigned task"),
     Line2D([0], [0], marker="o", color="none", markerfacecolor=C_OK,
            markeredgecolor=GREEN, markersize=8, label="Unaffected task"),
-    Line2D([0], [0], color=GREY, lw=1.3, label="Resource link"),
-    Line2D([0], [0], color=GREY, lw=1.3, marker=">", markersize=6,
+    Line2D([0], [0], color=GREY, lw=LW, label="Resource link"),
+    Line2D([0], [0], color=GREY, lw=LW, marker=">", markersize=6,
            label="Task dependency"),
-    Line2D([0], [0], color=RED, lw=1.8, linestyle=":",
+    Line2D([0], [0], color=RED, lw=LW, linestyle=":",
            label="Partition boundary"),
-    Line2D([0], [0], color=BLUE, lw=1.8, linestyle=":",
+    Line2D([0], [0], color=BLUE, lw=LW, linestyle=":",
            label="Updated partition"),
 ]
 ax.legend(handles=handles, loc="lower center",
