@@ -18,6 +18,18 @@
 \theoremstyle{remark}
 \newtheorem{remark}{Remark}
 
+% Toggle: \blindtrue for double-blind submission, \blindfalse for camera-ready.
+\newif\ifblind
+\blindtrue
+
+\ifblind
+\title{Dynamic Partial Repartitioning of DAG Workflows After Resource
+Failures in Federated Fog Environments%
+\thanks{Artifact: the simulator, scenario generators, recovery-instance
+exporter, MILP solver, evaluation scripts, and raw results will be made
+publicly available upon publication.}}
+\author{Anonymous submission}
+\else
 \title{Dynamic Partial Repartitioning of DAG Workflows After Resource Failures
 in Federated Fog Environments%
 \thanks{Artifact: the simulator, scenario generators, recovery-instance
@@ -27,17 +39,17 @@ available at \url{https://github.com/gayanigupta/dynamic-scheduling}.}}
 \author{
 \IEEEauthorblockN{Gayani Gupta\IEEEauthorrefmark{1},
 Amisha Gupta\IEEEauthorrefmark{2},
-Mohsen Amini Salehi\IEEEauthorrefmark{1},\\
 Sanjukta Bhowmick\IEEEauthorrefmark{1} and
 Antonio Fern\'andez Anta\IEEEauthorrefmark{3}}
 \IEEEauthorblockA{\IEEEauthorrefmark{1}Dept.\ of Computer Science and
 Engineering, University of North Texas, USA \\
-\{gayani.gupta, mohsen.aminisalehi, sanjukta.bhowmick\}@unt.edu}
+\{gayani.gupta, sanjukta.bhowmick\}@unt.edu}
 \IEEEauthorblockA{\IEEEauthorrefmark{2}University of California,
 Berkeley, USA}
 \IEEEauthorblockA{\IEEEauthorrefmark{3}IMDEA Networks Institute,
 Madrid, Spain \\ antonio.fernandez@imdea.org}
 }
+\fi
 
 \begin{document}
 \maketitle
@@ -161,7 +173,7 @@ combines dependency-closed failure-region extraction with
 Steiner-bounded replacement selection and incremental route repair for
 workflow recovery---the gap this paper addresses.
 
-Our prior work schedules DAG workflows across federated fog systems:
+Gupta et al.\ schedule DAG workflows across federated fog systems:
 \cite{gupta2025efficient} optimizes the initial task allocation, and
 \cite{gupta2025dataaware} jointly models data placement and approximate
 execution. Both assume resources stay available; this paper instead targets
