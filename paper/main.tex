@@ -601,6 +601,15 @@ Exported failure instances are solved offline with HiGHS through SciPy's
 \texttt{milp} interface. The simulator, generators, MILP instances, and
 raw CSVs are available in the artifact repository.
 
+\emph{Reproducibility.} Every reported number and figure regenerates from
+source: a single driver invocation sweeps the
+seed$\times$task-size$\times$failure-point grid and emits one CSV row per
+(scenario, strategy) pair; the same binary exports the MILP instances
+solved offline by the Python baseline, and the plotting scripts produce
+all result figures directly from the CSVs. Scenario generators are seeded
+per run, so the 240-scenario suite, the multi-failure and timing sweeps,
+and all ablations are byte-for-byte reproducible from the artifact.
+
 \begin{table}[t]
 \centering
 \caption{Simulation parameters}
