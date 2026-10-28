@@ -18,7 +18,7 @@ BLUE = "#1f5fa8"
 GREY = "#444444"
 
 
-def rnode(ax, x, y, label, r=6.0, fc="#e3e5e8", dead=False):
+def rnode(ax, x, y, label, r=6.0, fc="white", dead=False):
     """Resource node."""
     ec = RED if dead else "black"
     ax.add_patch(Circle((x, y), r, facecolor=fc, edgecolor=ec,
@@ -34,10 +34,11 @@ def rnode(ax, x, y, label, r=6.0, fc="#e3e5e8", dead=False):
 
 
 def tnode(ax, x, y, label, fc, ec, w=13.5, h=7.5, check=False):
-    """Task node: rounded rectangle."""
+    """Task node: rounded rectangle, status via border colour."""
     ax.add_patch(FancyBboxPatch((x - w / 2, y - h / 2), w, h,
                  boxstyle="round,pad=0.6,rounding_size=1.6",
-                 facecolor=fc, edgecolor=ec, linewidth=LW, zorder=3))
+                 facecolor="white", edgecolor=ec, linewidth=LW,
+                 zorder=3))
     ax.text(x, y + 0.2, label, ha="center", va="center", fontsize=FS,
             zorder=4)
     if check:
@@ -56,7 +57,7 @@ def partition(ax, x, y, w, h, tint, edge, label, lx=None, ly=None):
     """Dotted partition boundary with a small corner label."""
     ax.add_patch(FancyBboxPatch((x - w / 2, y - h / 2), w, h,
                  boxstyle="round,pad=1.6,rounding_size=2.4",
-                 facecolor=tint, alpha=0.14, edgecolor=edge,
+                 facecolor="none", edgecolor=edge,
                  linewidth=LW, linestyle=(0, (1.6, 2.2)), zorder=1))
     ax.text(lx if lx is not None else x,
             ly if ly is not None else y + h / 2 + 3.4,
@@ -90,7 +91,7 @@ for u, v, rad in [("A", "B", 0), ("B", "C", 0), ("A", "C", -0.28),
 for k in ("A", "C", "D", "E"):
     rnode(ax, *R[k], k)
 rnode(ax, *R["B"], "B", fc=C_AFF, dead=False)
-ax.add_patch(Circle(R["B"], 6.0, facecolor=C_AFF, edgecolor=RED,
+ax.add_patch(Circle(R["B"], 6.0, facecolor="#f3d5d5", edgecolor=RED,
                     lw=LW, zorder=3))
 ax.text(R["B"][0], R["B"][1] + 0.4, "B", ha="center", va="center",
         fontsize=FS + 1, zorder=4)
@@ -164,14 +165,14 @@ tdep(ax, (166, 15.5), (157, 10.5), color=GREY, rad=0.2)
 
 # ---------------- legend ----------------
 handles = [
-    Line2D([0], [0], marker="s", color="none", markerfacecolor=C_DONE,
+    Line2D([0], [0], marker="s", color="none", markerfacecolor="white",
            markeredgecolor="#777777", markersize=8,
            label="completed task"),
-    Line2D([0], [0], marker="s", color="none", markerfacecolor=C_AFF,
+    Line2D([0], [0], marker="s", color="none", markerfacecolor="white",
            markeredgecolor=RED, markersize=8, label="affected task"),
-    Line2D([0], [0], marker="s", color="none", markerfacecolor=C_NEW,
+    Line2D([0], [0], marker="s", color="none", markerfacecolor="white",
            markeredgecolor=BLUE, markersize=8, label="reassigned task"),
-    Line2D([0], [0], marker="s", color="none", markerfacecolor=C_OK,
+    Line2D([0], [0], marker="s", color="none", markerfacecolor="white",
            markeredgecolor="#4d8a4d", markersize=8,
            label="unaffected task"),
     Line2D([0], [0], color=GREY, lw=LW, label="resource link"),
