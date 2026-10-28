@@ -598,10 +598,21 @@ $\sim$20\% of nodes. The infrastructure is a connected graph of 10 nodes
 2--16 GB memory, link latency 1--25 ms, bandwidth 100--2000 Mbps, and
 per-MB cost 0.01--0.3.
 
+The parameter ranges mirror the motivating deployment rather than
+arbitrary intervals. Per-task demands of 200--5000~MI (0.05--6~s on an
+800--4000~MIPS node) span lightweight frame decoding through detection
+and tracking stages characteristic of edge video analytics; edge volumes
+of 0.5--40~MB cover compressed frame batches and extracted feature
+vectors, with \emph{data-heavy} mode approximating raw-chunk transfer.
+The ten-node infrastructure spans roadside units through depot servers,
+1--25~ms links correspond to metro-scale distances between municipal
+domains, and 100--2000~Mbps reflects municipal backhaul capacity.
+
 A failure is injected at 30\% or 60\% of the no-failure makespan on the
 resource carrying the most remaining work; \emph{multi-failure} mode
 injects three evenly spaced failures. Deadlines equal $1.3\times$ the
-no-failure makespan. Table~\ref{tab:params} summarizes the workload,
+no-failure makespan, modeling a stringent incident-alert service
+objective. Table~\ref{tab:params} summarizes the workload,
 infrastructure, and recovery parameters; each configuration uses 30--45
 seeds and all strategies replay identical pre-failure states per scenario.
 Exported failure instances are solved offline with HiGHS through SciPy's
