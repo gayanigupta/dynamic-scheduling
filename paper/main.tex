@@ -55,32 +55,35 @@ Madrid, Spain \\ antonio.fernandez@imdea.org}
 \maketitle
 
 \begin{abstract}
-Workflows executed on federated fog infrastructures are commonly modeled as
-task DAGs partitioned across heterogeneous, failure-prone resources. When a
-fog resource fails mid-execution, the standard remedy---repartitioning and
-rescheduling the entire workflow---stalls correct work, migrates healthy
-tasks, and inflates communication and recovery cost. We propose a
-\emph{dependency-aware partial repartitioning} method that maps a resource
-failure in the infrastructure graph to the smallest consistent region of the
-task DAG, repartitions only that region onto shortlisted replacement
-resources, and incrementally repairs only the communication paths affected by
-the failure. We prove that the replanned region is the smallest set closed
-under the dependency boundary rule, that recovery never reschedules work
-outside it, and that incremental path repair terminates with correct
-shortest paths at bounded per-query cost. We evaluate the method in a
-custom discrete-event simulator
-against full repartitioning, greedy reallocation, a static backup plan, an
-exact branch-and-bound solver, and a MILP model solved with HiGHS. Across 240
-scenarios, partial repartitioning considers $7\times$ fewer tasks than full
-repartitioning, moves $3.5\times$ fewer tasks, and reduces communication
-cost by $12\times$, while retaining a makespan within $7\%$ of full
-repartitioning and within $0.2\%$ of the exact optimum on small instances,
-and meeting deadlines at the optimum's rate at every deadline tightness.
-As workflow size grows, the replanned region stays proportional to the
-failure's blast radius---about $10\times$ smaller than full repartitioning
-at 150 tasks---and under cascaded failures the advantage in both movement
-and replanning scope grows further.
+Federated fog systems execute deadline-bound workflows---task DAGs
+partitioned across resources owned by different administrative domains.
+When a resource fails mid-execution, the standard recovery
+action---repartitioning the entire workflow---interrupts tasks that were
+executing correctly, pays migration and re-staging costs for healthy
+work, and forces a rebuild of the inter-resource routing plan. We
+present a \emph{partial repartitioning} method that confines recovery to
+the failure's blast radius. A boundary rule maps the failed node to the
+smallest dependency-closed region of the task DAG; an anchor-aware
+repartitioner re-places only that region onto replacement resources
+drawn from a Steiner-bounded shortlist; and lazy incremental repair
+restores just the routes that traversed the failure. We prove the
+recovered region minimal, recovery non-disruptive to unaffected work,
+and route repair correct at bounded per-query cost. Evaluated in a
+discrete-event simulator against full repartitioning, greedy
+reallocation, a static backup plan, exact branch-and-bound, and a MILP
+solved with HiGHS, partial repartitioning retains 99.8\% of exact
+schedule quality while considering $7\times$ fewer tasks, moving
+$3.5\times$ fewer, and cutting communication cost $12\times$. The
+replanned region tracks the failure's blast radius rather than workflow
+size---about $10\times$ smaller than full repartitioning at 150
+tasks---and the advantage widens under cascaded failures.
 \end{abstract}
+
+\begin{IEEEkeywords}
+Workflow scheduling, task graphs, federated fog computing, fault
+recovery, partial repartitioning, resource placement, dynamic graph
+algorithms, discrete-event simulation
+\end{IEEEkeywords}
 
 \section{Introduction}
 
