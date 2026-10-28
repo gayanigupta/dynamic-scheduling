@@ -5,182 +5,186 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch
 from matplotlib.lines import Line2D
 
-FS = 9
+FS = 8.5
 FS_T = 10
-
-C_DONE = "#bdbdbd"
-C_AFF = "#f1a0a0"
-C_NEW = "#a8cbe8"
-C_OK = "#b5ddb5"
-RED = "#c62828"
-BLUE = "#1565c0"
-GREEN = "#2e7d32"
-GREY = "#555555"
 LW = 1.4
 
+C_DONE = "#c9c9c9"      # completed task
+C_AFF = "#e88f8f"       # affected task
+C_NEW = "#9cc4e4"       # reassigned task
+C_OK = "#a9d6a9"        # unaffected task
+RED = "#b03030"
+BLUE = "#1f5fa8"
+GREY = "#444444"
 
-def node(ax, x, y, label, r=5.5, fc="#d9dce0", ec="black", check=False):
+
+def rnode(ax, x, y, label, r=6.0, fc="#e3e5e8", dead=False):
+    """Resource node."""
+    ec = RED if dead else "black"
     ax.add_patch(Circle((x, y), r, facecolor=fc, edgecolor=ec,
                         linewidth=LW, zorder=3))
-    ax.text(x, y + 0.3, label, ha="center", va="center", fontsize=FS,
-            zorder=4)
-    if check:
-        ax.text(x + 3.4, y - 1.1, "\u2713", ha="center", va="center",
+    if dead:
+        d = r * 0.62
+        for s in (1, -1):
+            ax.plot([x - d, x + d], [y - s * d, y + s * d], color=RED,
+                    lw=LW, zorder=4)
+    else:
+        ax.text(x, y + 0.4, label, ha="center", va="center",
                 fontsize=FS + 1, zorder=4)
 
 
-def link(ax, p0, p1, color=GREY, lw=LW, ls="-", rad=0.0, arrow=False,
-         sh=7.5):
+def tnode(ax, x, y, label, fc, ec, w=13.5, h=7.5, check=False):
+    """Task node: rounded rectangle."""
+    ax.add_patch(FancyBboxPatch((x - w / 2, y - h / 2), w, h,
+                 boxstyle="round,pad=0.6,rounding_size=1.6",
+                 facecolor=fc, edgecolor=ec, linewidth=LW, zorder=3))
+    ax.text(x, y + 0.2, label, ha="center", va="center", fontsize=FS,
+            zorder=4)
+    if check:
+        ax.text(x + w / 2 - 2.6, y - 0.2, "\u2713", ha="center",
+                va="center", fontsize=FS - 1, zorder=4)
+
+
+def elink(ax, p0, p1, color=GREY, ls="-", rad=0.0, arrow=False, sh=7.0):
     ax.add_patch(FancyArrowPatch(p0, p1, connectionstyle=f"arc3,rad={rad}",
-                 arrowstyle="-|>" if arrow else "-", mutation_scale=9,
-                 color=color, lw=lw, linestyle=ls, zorder=2,
+                 arrowstyle="-|>" if arrow else "-", mutation_scale=10,
+                 color=color, lw=LW, linestyle=ls, zorder=2,
                  shrinkA=sh, shrinkB=sh))
 
 
-def part_box(ax, x, y, w, h, color, edge=RED):
+def partition(ax, x, y, w, h, tint, edge, label, lx=None, ly=None):
+    """Dotted partition boundary with a small corner label."""
     ax.add_patch(FancyBboxPatch((x - w / 2, y - h / 2), w, h,
-                 boxstyle="round,pad=1.4", facecolor=color, alpha=0.18,
-                 edgecolor=edge, linewidth=LW,
-                 linestyle=":", zorder=1))
+                 boxstyle="round,pad=1.6,rounding_size=2.4",
+                 facecolor=tint, alpha=0.14, edgecolor=edge,
+                 linewidth=LW, linestyle=(0, (1.6, 2.2)), zorder=1))
+    ax.text(lx if lx is not None else x,
+            ly if ly is not None else y + h / 2 + 3.4,
+            label, ha="center", va="center", fontsize=FS - 1,
+            color="#333333", zorder=4)
 
 
-fig, ax = plt.subplots(figsize=(9.2, 4.8))
+fig, ax = plt.subplots(figsize=(9.4, 4.4))
 ax.set_xlim(0, 200)
-ax.set_ylim(0, 106)
+ax.set_ylim(0, 100)
 ax.axis("off")
 
 # dividers
-ax.plot([100, 100], [8, 103], color="#cccccc", lw=0.8, ls=(0, (4, 4)))
-ax.plot([2, 198], [58, 58], color="#cccccc", lw=0.8, ls=(0, (4, 4)))
+ax.plot([100, 100], [9, 97], color="#dddddd", lw=0.9)
+ax.plot([2, 198], [55, 55], color="#dddddd", lw=0.9)
 
-ax.text(50, 104, "(a) Before failure", ha="center", fontsize=FS_T)
-ax.text(150, 104, "(b) After failure and repair", ha="center",
+ax.text(50, 97, "(a) Before failure", ha="center", fontsize=FS_T)
+ax.text(150, 97, "(b) After failure and repair", ha="center",
         fontsize=FS_T)
-ax.text(1, 80, "Resource\ngraph", ha="left", va="center", fontsize=FS)
-ax.text(1, 30, "Task graph\npartitions", ha="left", va="center",
-        fontsize=FS)
+ax.text(3, 92, "resource\ngraph", ha="left", va="top", fontsize=FS - 1,
+        color="#666666", style="italic")
+ax.text(3, 50, "task DAG\npartitions", ha="left", va="top",
+        fontsize=FS - 1, color="#666666", style="italic")
 
-# ---------------- resource graph (left) ----------------
-res = {"A": (34, 82), "B": (54, 86), "C": (74, 82), "D": (54, 64),
-       "E": (86, 64)}
-for u, v, rad in [("A", "B", 0), ("B", "C", 0), ("A", "C", -0.3),
+# ---------------- panel (a): resource graph ----------------
+R = {"A": (32, 78), "B": (52, 84), "C": (72, 78), "D": (52, 62),
+     "E": (84, 62)}
+for u, v, rad in [("A", "B", 0), ("B", "C", 0), ("A", "C", -0.28),
                   ("B", "D", 0), ("C", "D", 0), ("D", "E", 0)]:
-    link(ax, res[u], res[v], rad=rad)
+    elink(ax, R[u], R[v], rad=rad)
 for k in ("A", "C", "D", "E"):
-    node(ax, *res[k], k, r=7)
-node(ax, *res["B"], "B", r=7, fc=C_AFF, ec=RED)
-ax.annotate("B fails", xy=(59, 90), xytext=(64, 97),
-            color=RED, fontsize=FS, ha="left",
-            arrowprops=dict(arrowstyle="-|>", color=RED, lw=LW))
+    rnode(ax, *R[k], k)
+rnode(ax, *R["B"], "B", fc=C_AFF, dead=False)
+ax.add_patch(Circle(R["B"], 6.0, facecolor=C_AFF, edgecolor=RED,
+                    lw=LW, zorder=3))
+ax.text(R["B"][0], R["B"][1] + 0.4, "B", ha="center", va="center",
+        fontsize=FS + 1, zorder=4)
+ax.annotate("B fails", xy=(57.5, 86.5), xytext=(64, 91), color=RED,
+            fontsize=FS, ha="left",
+            arrowprops=dict(arrowstyle="-", color=RED, lw=0.9))
 
-# ---------------- resource graph (right) ----------------
-res2 = {k: (x + 100, y) for k, (x, y) in res.items()}
+# ---------------- panel (b): resource graph ----------------
+R2 = {k: (x + 100, y) for k, (x, y) in R.items()}
 for u, v in [("A", "B"), ("B", "C"), ("B", "D")]:
-    link(ax, res2[u], res2[v], lw=LW, color=RED, ls=(0, (3, 3)))
-link(ax, res2["D"], res2["E"])
-link(ax, res2["A"], res2["C"], rad=-0.3, lw=LW, color=BLUE, arrow=True)
-link(ax, res2["C"], res2["D"], lw=LW, color=BLUE, arrow=True)
+    elink(ax, R2[u], R2[v], color=RED, ls=(0, (3, 3)))
+elink(ax, R2["D"], R2["E"])
+elink(ax, R2["A"], R2["C"], rad=-0.28, color=BLUE, arrow=True)
+elink(ax, R2["C"], R2["D"], color=BLUE, arrow=True)
 for k in ("A", "C", "D", "E"):
-    node(ax, *res2[k], k, r=7)
-ax.add_patch(Circle(res2["B"], 7, facecolor=C_AFF, edgecolor=RED,
-                    lw=1.1, zorder=3))
-bx, by = res2["B"]
-ax.plot([bx - 5.5, bx + 5.5], [by - 5.5, by + 5.5], color=RED, lw=LW,
-        zorder=4)
-ax.plot([bx - 5.5, bx + 5.5], [by + 5.5, by - 5.5], color=RED, lw=LW,
-        zorder=4)
-ax.text(144, 93, "B failed", color=RED, fontsize=FS, ha="right")
-ax.text(198, 102, "routes rerouted\nover surviving links", color=BLUE,
-        fontsize=FS - 1.5, ha="right", va="top")
+    rnode(ax, *R2[k], k)
+rnode(ax, *R2["B"], "", fc=C_AFF, dead=True)
+ax.text(143, 92, "B failed", color=RED, fontsize=FS, ha="right")
 
-# ---------------- task graph (left) ----------------
-node(ax, 56, 46, "T1", fc=C_DONE, ec=GREY, check=True)
-part_box(ax, 56, 46, 13, 11, C_DONE)
-ax.text(56, 54.8, "Partition A", ha="center", fontsize=FS - 1.5,
-        color="#333333")
+# ---------------- panel (a): task DAG ----------------
+def tdep(ax, p0, p1, color=GREY, rad=0.0):
+    elink(ax, p0, p1, color=color, rad=rad, arrow=True, sh=8.0)
 
-node(ax, 38, 34, "T2", fc=C_AFF, ec=RED)
-node(ax, 38, 22, "T4", fc=C_AFF, ec=RED)
-part_box(ax, 38, 28, 15, 24, C_AFF)
-ax.text(38, 16.8, "Partition B", ha="center", fontsize=FS - 1.5,
-        color="#333333")
+tnode(ax, 50, 44, "T1", C_DONE, "#777777", check=True)
+partition(ax, 50, 44, 17, 11, C_DONE, RED, "$P_A$")
 
-node(ax, 74, 34, "T3", fc=C_OK, ec=GREEN)
-part_box(ax, 74, 34, 13, 11, C_OK)
-ax.text(82.5, 34, "Partition C", ha="left", va="center",
-        fontsize=FS - 1.5, color="#333333")
-node(ax, 74, 22, "T5", fc=C_OK, ec=GREEN)
-part_box(ax, 74, 22, 13, 11, C_OK)
-ax.text(82.5, 22, "Partition D", ha="left", va="center",
-        fontsize=FS - 1.5, color="#333333")
-node(ax, 56, 10, "T6", fc=C_OK, ec=GREEN)
-part_box(ax, 56, 10, 13, 11, C_OK)
-ax.text(64.5, 10, "Partition E", ha="left", va="center",
-        fontsize=FS - 1.5, color="#333333")
+tnode(ax, 34, 31, "T2", C_AFF, RED)
+tnode(ax, 34, 19, "T4", C_AFF, RED)
+partition(ax, 34, 25, 19, 26, C_AFF, RED, "$P_B$")
 
-link(ax, (52, 42), (41.5, 37), arrow=True, sh=6)
-link(ax, (60, 42), (70.5, 37), arrow=True, sh=6)
-link(ax, (38, 28.5), (38, 27.5), arrow=True, sh=6)
-link(ax, (40, 16), (52, 13.5), arrow=True, sh=6)
-link(ax, (70, 17.5), (60, 13.5), arrow=True, sh=6)
+tnode(ax, 70, 31, "T3", C_OK, "#4d8a4d")
+partition(ax, 70, 31, 17, 11, C_OK, RED, "$P_C$")
+tnode(ax, 70, 19, "T5", C_OK, "#4d8a4d")
+partition(ax, 70, 19, 17, 11, C_OK, RED, "$P_D$", lx=60.5, ly=19)
+tnode(ax, 52, 7, "T6", C_OK, "#4d8a4d")
+partition(ax, 52, 7, 17, 10, C_OK, RED, "$P_E$", lx=63, ly=7)
 
-ax.add_patch(FancyArrowPatch((58, 61), (32, 39),
-             connectionstyle="arc3,rad=0.35", arrowstyle="-|>",
-             mutation_scale=9, color=RED, lw=LW,
-             linestyle=(0, (4, 3))))
+tdep(ax, (44, 41.5), (39, 34.5), rad=-0.25)
+tdep(ax, (56, 41.5), (65, 34.5), rad=0.25)
+tdep(ax, (34, 27), (34, 23.2))
+tdep(ax, (38, 15.5), (47, 10.5), rad=-0.2)
+tdep(ax, (66, 15.5), (57, 10.5), rad=0.2)
 
-ax.add_patch(FancyArrowPatch((84, 28), (97, 28), arrowstyle="-|>",
-             mutation_scale=16, color="black", lw=LW))
-ax.text(90.5, 47, "repartition\naffected tasks\nonly", ha="center",
-        fontsize=FS - 1.5)
+# failure -> affected partition
+elink(ax, (56, 58), (28, 38), color=RED, ls=(0, (4, 3)), rad=0.3,
+      arrow=True, sh=6)
+ax.text(100, 33.5, "partial repartitioning", ha="center", va="center",
+        fontsize=FS - 1, color="#333333")
+elink(ax, (86, 28), (114, 28), color="black", arrow=True, sh=0)
 
-# ---------------- task graph (right) ----------------
-node(ax, 156, 46, "T1", fc=C_DONE, ec=GREY, check=True)
-part_box(ax, 156, 46, 13, 11, C_DONE)
-ax.text(156, 54.8, "Partition A", ha="center", fontsize=FS - 1.5,
-        color="#333333")
+# ---------------- panel (b): task DAG ----------------
+tnode(ax, 152, 44, "T1", C_DONE, "#777777", check=True)
+partition(ax, 152, 44, 17, 11, C_DONE, RED, "$P_A$")
 
-part_box(ax, 156, 34, 48, 11, C_OK, edge=BLUE)
-node(ax, 140, 34, "T2", fc=C_NEW, ec=BLUE)
-node(ax, 170, 34, "T3", fc=C_OK, ec=GREEN)
-part_box(ax, 156, 22, 48, 11, C_OK, edge=BLUE)
-node(ax, 140, 22, "T4", fc=C_NEW, ec=BLUE)
-node(ax, 170, 22, "T5", fc=C_OK, ec=GREEN)
-node(ax, 156, 8, "T6", fc=C_OK, ec=GREEN)
-part_box(ax, 156, 8, 13, 11, C_OK)
-ax.text(164.5, 8, "Partition E", ha="left", va="center",
-        fontsize=FS - 1.5, color="#333333")
+# updated partitions: same boxes, new members, blue dotted boundary
+tnode(ax, 136, 31, "T2", C_NEW, BLUE)
+tnode(ax, 170, 31, "T3", C_OK, "#4d8a4d")
+partition(ax, 153, 31, 50, 11, C_OK, BLUE, "$P_C$  (updated)")
+tnode(ax, 136, 19, "T4", C_NEW, BLUE)
+tnode(ax, 170, 19, "T5", C_OK, "#4d8a4d")
+partition(ax, 153, 19, 50, 11, C_OK, BLUE, "$P_D$  (updated)",
+          lx=126, ly=15)
+tnode(ax, 152, 7, "T6", C_OK, "#4d8a4d")
+partition(ax, 152, 7, 17, 10, C_OK, RED, "$P_E$", lx=163, ly=7)
 
-link(ax, (152, 42), (141.5, 37), color=BLUE, arrow=True, sh=6)
-link(ax, (160, 42), (166.5, 37), arrow=True, sh=6)
-link(ax, (140, 28.5), (140, 27.5), color=BLUE, arrow=True, sh=6)
-link(ax, (144, 16), (154, 11.5), color=BLUE, arrow=True, sh=6)
-link(ax, (166, 17.5), (159, 12), arrow=True, sh=6)
-
-ax.text(196, 53, "T2: B $\\rightarrow$ C\nT4: B $\\rightarrow$ D",
-        color=BLUE, fontsize=FS, ha="right", va="top")
+tdep(ax, (146, 41.5), (139, 34.5), color=BLUE, rad=-0.25)
+tdep(ax, (158, 41.5), (166, 34.5), color=GREY, rad=0.25)
+tdep(ax, (136, 27), (136, 23.2), color=BLUE)
+tdep(ax, (140, 15.5), (149, 10.5), color=BLUE, rad=-0.2)
+tdep(ax, (166, 15.5), (157, 10.5), color=GREY, rad=0.2)
 
 # ---------------- legend ----------------
 handles = [
-    Line2D([0], [0], marker="o", color="none", markerfacecolor=C_DONE,
-           markeredgecolor=GREY, markersize=8, label="Completed task"),
-    Line2D([0], [0], marker="o", color="none", markerfacecolor=C_AFF,
-           markeredgecolor=RED, markersize=8, label="Affected task"),
-    Line2D([0], [0], marker="o", color="none", markerfacecolor=C_NEW,
-           markeredgecolor=BLUE, markersize=8, label="Reassigned task"),
-    Line2D([0], [0], marker="o", color="none", markerfacecolor=C_OK,
-           markeredgecolor=GREEN, markersize=8, label="Unaffected task"),
-    Line2D([0], [0], color=GREY, lw=LW, label="Resource link"),
+    Line2D([0], [0], marker="s", color="none", markerfacecolor=C_DONE,
+           markeredgecolor="#777777", markersize=8,
+           label="completed task"),
+    Line2D([0], [0], marker="s", color="none", markerfacecolor=C_AFF,
+           markeredgecolor=RED, markersize=8, label="affected task"),
+    Line2D([0], [0], marker="s", color="none", markerfacecolor=C_NEW,
+           markeredgecolor=BLUE, markersize=8, label="reassigned task"),
+    Line2D([0], [0], marker="s", color="none", markerfacecolor=C_OK,
+           markeredgecolor="#4d8a4d", markersize=8,
+           label="unaffected task"),
+    Line2D([0], [0], color=GREY, lw=LW, label="resource link"),
     Line2D([0], [0], color=GREY, lw=LW, marker=">", markersize=6,
-           label="Task dependency"),
+           label="task dependency"),
     Line2D([0], [0], color=RED, lw=LW, linestyle=":",
-           label="Partition boundary"),
+           label="partition"),
     Line2D([0], [0], color=BLUE, lw=LW, linestyle=":",
-           label="Updated partition"),
+           label="updated partition"),
 ]
 ax.legend(handles=handles, loc="lower center",
-          bbox_to_anchor=(0.5, -0.075), ncol=4, fontsize=FS - 1.5,
-          frameon=False, columnspacing=1.1, handletextpad=0.4)
+          bbox_to_anchor=(0.5, -0.085), ncol=4, fontsize=FS - 1,
+          frameon=False, columnspacing=1.2, handletextpad=0.45)
 
 fig.savefig("figures/fig0_overview.png", dpi=220,
             bbox_inches="tight", facecolor="white")
