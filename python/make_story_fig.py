@@ -121,33 +121,35 @@ ax.text(102, 61.5, "member fails", color=RED, fontsize=FS - 1,
         bbox=dict(facecolor="white", edgecolor="none", pad=1.0))
 
 # ---------------- branching analytics DAG ----------------
-# ingest -> {detect, count} -> track -> aggregate -> alert
+# same topology as Fig. 2: ingest -> {detect, count} ->
+# {track, localize} -> alert ; the top branch sits on failed f_3.
 tnode(ax, 24, 33, "ingest")
-tnode(ax, 62, 41, "detect")
-tnode(ax, 62, 25, "count")
-tnode(ax, 100, 33, "track")
-tnode(ax, 138, 33, "aggregate")
-tnode(ax, 180, 33, "alert")
+tnode(ax, 60, 42, "detect")
+tnode(ax, 60, 24, "count")
+tnode(ax, 98, 42, "track")
+tnode(ax, 98, 24, "localize")
+tnode(ax, 140, 33, "alert")
 
-elink(ax, (33, 34.5), (52.5, 40), arrow=True, rad=-0.15, sh=5)
-elink(ax, (33, 31.5), (52.5, 26), arrow=True, rad=0.15, sh=5)
-elink(ax, (71.5, 40), (91, 34.5), arrow=True, rad=-0.15, sh=5)
-elink(ax, (71.5, 26), (91, 31.5), arrow=True, rad=0.15, sh=5)
-elink(ax, (109, 33), (129, 33), arrow=True, sh=5)
-elink(ax, (147, 33), (171, 33), arrow=True, sh=5)
+elink(ax, (33, 34.5), (50.5, 41), arrow=True, rad=-0.12, sh=5)
+elink(ax, (33, 31.5), (50.5, 25), arrow=True, rad=0.12, sh=5)
+elink(ax, (69.5, 42), (88.5, 42), arrow=True, sh=5)
+elink(ax, (69.5, 24), (88.5, 24), arrow=True, sh=5)
+elink(ax, (107.5, 41), (130.5, 34), arrow=True, rad=-0.12, sh=5)
+elink(ax, (107.5, 25), (130.5, 32), arrow=True, rad=0.12, sh=5)
 
-# partitions pinned to resources
+# partitions pinned to resources (mirrors Fig. 2's partition layout)
 partition(ax, 24, 33, 21, 11, "$P_1 \\rightarrow f_1$")
-partition(ax, 62, 33, 21, 30, "$P_2 \\rightarrow f_2$", ly=50.5)
-partition(ax, 100, 33, 21, 11, "$P_3 \\rightarrow f_3$ (failed)", edge=RED)
-partition(ax, 158.5, 33, 62, 11, "$P_4 \\rightarrow f_4$", lx=158.5)
-
+partition(ax, 79, 42, 60, 11, "$P_2 \\rightarrow f_3$ (failed)",
+          edge=RED, ly=50.5)
+partition(ax, 60, 24, 21, 11, "$P_3 \\rightarrow f_2$")
+partition(ax, 98, 24, 21, 11, "$P_4 \\rightarrow f_4$", lx=98, ly=15.5)
+partition(ax, 140, 33, 21, 11, "$P_5 \\rightarrow f_5$")
 
 # mapping hints (dashed) from infra to partitions
-elink(ax, (36, 71.2), (28, 45.5), ls=(0, (3, 3)), rad=0.15, sh=4)
-elink(ax, (102, 65), (100, 38.5), ls=(0, (3, 3)), sh=4)
+elink(ax, (36, 71.2), (26, 41.5), ls=(0, (3, 3)), rad=0.15, sh=4)
+elink(ax, (102, 65), (90, 48), ls=(0, (3, 3)), rad=0.1, sh=4)
 
-ax.text(100, 8, "each partition is pinned to a fog resource; failure of one\n"
+ax.text(100, 6, "each partition is pinned to a fog resource; failure of one\n"
         "member affects only the tasks staged on it",
         ha="center", fontsize=FS - 1, color="#555555")
 

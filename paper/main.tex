@@ -146,8 +146,9 @@ Contributions:
 administrative domains (traffic authority, transit agency, public safety);
 cameras stream into the federation. Bottom: an incident-analytics DAG
 partitioned and pinned to individual resources. When member $f_3$ fails
-mid-execution, only the tasks staged on it (partition $P_3$) are
-affected---the recovery problem this paper addresses.}
+mid-execution, only the tasks staged on it (partition $P_2$: \emph{detect}
+and \emph{track}) are affected; Fig.~\ref{fig:overview} shows how such a
+branch is repartitioned while the rest of the workflow keeps running.}
 \label{fig:story}
 \end{figure*}
 
