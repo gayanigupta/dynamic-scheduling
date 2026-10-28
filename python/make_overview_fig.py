@@ -7,7 +7,7 @@ from matplotlib.lines import Line2D
 
 FS = 8.5
 FS_T = 10
-LW = 1.4
+LW = 1.0
 
 C_DONE = "#c9c9c9"      # completed task
 C_AFF = "#e88f8f"       # affected task
