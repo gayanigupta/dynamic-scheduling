@@ -601,12 +601,14 @@ per-MB cost 0.01--0.3.
 The parameter ranges mirror the motivating deployment rather than
 arbitrary intervals. Per-task demands of 200--5000~MI (0.05--6~s on an
 800--4000~MIPS node) span lightweight frame decoding through detection
-and tracking stages characteristic of edge video analytics; edge volumes
-of 0.5--40~MB cover compressed frame batches and extracted feature
-vectors, with \emph{data-heavy} mode approximating raw-chunk transfer.
-The ten-node infrastructure spans roadside units through depot servers,
-1--25~ms links correspond to metro-scale distances between municipal
-domains, and 100--2000~Mbps reflects municipal backhaul capacity.
+and tracking stages whose measured latencies on embedded edge boards
+range from tens of milliseconds to several seconds per
+frame~\cite{edgebench21,edgedetect24}; edge volumes of 0.5--40~MB cover
+compressed frame batches and extracted feature vectors, with
+\emph{data-heavy} mode approximating raw-chunk transfer. The ten-node
+infrastructure spans roadside units through depot servers, 1--25~ms
+links correspond to metro-scale distances between municipal domains,
+and 100--2000~Mbps reflects municipal backhaul capacity.
 
 A failure is injected at 30\% or 60\% of the no-failure makespan on the
 resource carrying the most remaining work; \emph{multi-failure} mode
@@ -984,6 +986,17 @@ S.~Pallewatta, V.~Kostakos, and R.~Buyya, ``MicroFog: A framework for
 scalable placement of microservices-based IoT applications in federated
 fog environments,'' \emph{J.\ Syst.\ Softw.}, 2023, art.~111910,
 doi:10.1016/j.jss.2023.111910.
+
+\bibitem{edgebench21}
+J.~Lee, P.~Wang, R.~Xu, V.~Dasari, N.~Weston, Y.~Li, S.~Bagchi, and
+S.~Chaterji, ``Benchmarking video object detection systems on embedded
+devices under resource contention,'' in \emph{Proc.\ 5th Int.\ Workshop
+Embedded Mobile Deep Learn.\ (EMDL@MobiSys)}, 2021, pp.\ 19--24.
+
+\bibitem{edgedetect24}
+D.~K. Alqahtani, M.~A. Cheema, M.~A. Rodriguez, and A.~N. Toosi, ``A
+comprehensive evaluation of deep learning object detection models on
+heterogeneous edge devices,'' arXiv:2409.16808, 2024.
 \end{thebibliography}
 
 \end{document}
