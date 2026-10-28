@@ -84,6 +84,18 @@ and replanning scope grows further.
 
 \section{Introduction}
 
+Consider a traffic-incident analytics pipeline in a smart city
+(Fig.~\ref{fig:story}). The traffic authority, transit agency, and
+public-safety department each operate fog infrastructure and federate it to
+share capacity across administrative domains. Street cameras feed a
+\emph{ingest--detect--track--aggregate--alert} workflow; the scheduler
+partitions this DAG and pins each partition to a fog resource subject to
+capacity, memory, communication cost, and deadline constraints. When a fog
+resource fails mid-incident, the upstream stages that already produced
+results are still valid---yet the standard remedy, repartitioning the whole
+workflow, discards that progress exactly when the alert deadline matters
+most.
+
 Federated fog environments distribute workflow tasks across heterogeneous
 resources owned by different administrative domains. A workflow is a directed
 acyclic graph (DAG): nodes are tasks, edges are data dependencies. The
@@ -129,6 +141,17 @@ Contributions:
 
 \begin{figure*}[t]
 \centering
+\includegraphics[width=0.92\textwidth]{figures/fig0_story.png}
+\caption{Motivating scenario. Top: fog resources federated across three
+administrative domains (traffic authority, transit agency, public safety);
+cameras stream into the federation. Bottom: an incident-analytics workflow
+partitioned and pinned to individual resources. A resource failure affects
+only the partitions staged on it.}
+\label{fig:story}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
 \includegraphics[width=0.92\textwidth]{figures/fig0_overview.png}
 \caption{Partial repartitioning after a resource failure. Top: the
 resource (infrastructure) graph; node B fails and communication is
@@ -141,6 +164,7 @@ unaffected tasks T3, T5, T6 keep their assignments and staged data.}
 
 \section{Related Work}
 
+\textbf{Dynamic graph maintenance.}
 Dynamic shortest-path maintenance on evolving graphs has been studied
 extensively; Bhowmick et al.~\cite{bhowmick2019} update a shortest-path tree
 incrementally when edges change, avoiding full recomputation. To our
@@ -148,7 +172,7 @@ knowledge this technique has not been applied to communication-path repair
 after fog-resource failures; we adapt the idea to lazily repair only the
 routes that post-failure traffic actually uses.
 
-Fog and edge \emph{federation formation} is a complementary line of work.
+\textbf{Fog and edge federation formation.}
 Hammoud et al.~\cite{hammoud2022federation} form adaptive fog federations
 for vehicular networks through a hedonic coalition game with
 merge-and-split reorganization as mobility changes service demand.
@@ -162,6 +186,7 @@ resources join a federation and where services are placed; membership
 changes are handled at formation or placement time, and none repairs an
 in-flight workflow partition when a member fails mid-execution.
 
+\textbf{Workflow recovery and re-planning.}
 Task redistribution when fog resources join or leave was studied
 in~\cite{DynamicFog}; it migrates load but does not repartition a workflow
 DAG by its dependency structure. Dynamic workflow rescheduling that
@@ -173,12 +198,14 @@ combines dependency-closed failure-region extraction with
 Steiner-bounded replacement selection and incremental route repair for
 workflow recovery---the gap this paper addresses.
 
+\textbf{Fog workflow scheduling.}
 Gupta et al.\ schedule DAG workflows across federated fog systems:
 \cite{gupta2025efficient} optimizes the initial task allocation, and
 \cite{gupta2025dataaware} jointly models data placement and approximate
 execution. Both assume resources stay available; this paper instead targets
 mid-execution failures and recovery of the smallest affected region.
 
+\textbf{List scheduling and simulation.}
 Initial partitioning builds on HEFT-style list
 scheduling~\cite{topcuoglu2002heft}; our recovery repartitioner reuses its
 ranking principle with anchor-aware communication costs. Fog workflow
@@ -565,18 +592,57 @@ per-MB cost 0.01--0.3.
 A failure is injected at 30\% or 60\% of the no-failure makespan on the
 resource carrying the most remaining work; \emph{multi-failure} mode
 injects three evenly spaced failures. Deadlines equal $1.3\times$ the
-no-failure makespan. Recovery parameters: candidate shortlist $k{=}8$,
-move penalty $\lambda_{move}{=}50$ ms, replanning delay $5 + 0.5\,|S|$ ms.
-Each configuration uses 30--45 seeds; all strategies replay identical
-pre-failure states per scenario. Exported failure instances are solved
-offline with HiGHS through SciPy's \texttt{milp} interface. The simulator,
-generators, MILP instances, and raw CSVs are available in the artifact
-repository.
+no-failure makespan. Table~\ref{tab:params} summarizes the workload,
+infrastructure, and recovery parameters; each configuration uses 30--45
+seeds and all strategies replay identical pre-failure states per scenario.
+Exported failure instances are solved offline with HiGHS through SciPy's
+\texttt{milp} interface. The simulator, generators, MILP instances, and
+raw CSVs are available in the artifact repository.
 
-Strategies compared: \textbf{partial} (ours), \textbf{full} repartitioning,
-\textbf{greedy} per-task best-EFT placement, \textbf{static}
-designated-backup, \textbf{exact B\&B} (small regions), and offline
-\textbf{MILP}.
+\begin{table}[t]
+\centering
+\caption{Simulation parameters}
+\label{tab:params}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Parameter & Value (uniform per scenario) \\
+\midrule
+Task count $n$ & 20--150 (mode dependent) \\
+Task work & 200--5000 MI \\
+Task memory / context & 64--1024 MB / 0.5--15 MB \\
+Edge data volume & 0.5--40 MB (10$\times$ in heavy mode) \\
+DAG shape & layered, $\max(3,n/7)$ layers, $p_{\mathrm{edge}}{=}0.25$ \\
+\midrule
+Infra nodes & 10 (spanning tree $+$ links, $p{=}0.45$) \\
+Node capacity / memory & 800--4000 MIPS / 2--16 GB \\
+Link latency / bandwidth & 1--25 ms / 100--2000 Mbps \\
+Link cost & 0.01--0.3 per MB \\
+\midrule
+Failure injection & 0.3 or 0.6 of no-failure makespan \\
+Multi-failure & 3 evenly spaced failures \\
+Deadline & $1.3\times$ no-failure makespan \\
+Shortlist $k$ / $\lambda_{move}$ & 8 / 50 ms \\
+Replan delay & $5 + 0.5\,|S|$ ms \\
+Seeds per configuration & 30--45 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\emph{Baselines.} \textbf{Partial} is our method. \textbf{Full}
+repartitioning reruns global list scheduling on all unfinished
+tasks---the standard remedy our method avoids. \textbf{Greedy} places
+each affected task on its individual best-EFT resource without regional
+coordination. \textbf{Static} designates a fixed backup per resource,
+the simplest production fallback. \textbf{Exact B\&B} exhaustively
+solves the recovery region (small instances only), and offline
+\textbf{MILP} validates feasibility on exported instances.
+
+\emph{Metrics.} We report makespan (post-recovery workflow completion
+time), deadline-satisfaction rate, tasks migrated, replanning scope
+(tasks reconsidered), communication cost, route-repair count, and
+measured planner wall time.
 
 \subsection{Results}
 
@@ -607,11 +673,26 @@ problem size (right).}
 \label{fig:disruption}
 \end{figure}
 
+We structure the results around six questions:
+\textbf{RQ1}~quality vs.\ disruption; \textbf{RQ2}~scalability;
+\textbf{RQ3}~robustness under cascaded and variably timed failures;
+\textbf{RQ4}~deadline feasibility; \textbf{RQ5}~closeness to provable
+optimum; \textbf{RQ6}~contribution of each algorithmic choice.
+
+\emph{RQ1 (quality vs.\ disruption).}
 Table~\ref{tab:normal} and Fig.~\ref{fig:makespan} summarize the normal
 mode. Partial repartitioning retains 99.8\% of the exact solver's schedule
 quality while considering $\sim$7$\times$ fewer tasks than full
 repartitioning and moving $\sim$3.5$\times$ fewer. Communication cost
 drops $12\times$ because intact routes and assignments are preserved.
+
+\emph{RQ2 (scalability).} Fig.~\ref{fig:scope} scales the workflow from 20
+to 150 tasks. Partial's replanning scope tracks the failure's blast radius
+(1.9 to 8.8 tasks) while full repartitioning's grows linearly (10.3 to
+88.2); the same holds for migrations (1.7--8.5 vs.\ 5.3--34.5). Deadline
+satisfaction is equal at $n{\ge}60$ (0.97--1.00 for both), so the
+cost advantage compounds with size at no feasibility penalty: at $n{=}150$
+partial touches 10$\times$ fewer tasks.
 
 \begin{table}[t]
 \centering
@@ -648,6 +729,7 @@ static fallback misses 96\% of deadlines.}
 \label{fig:deadline}
 \end{figure}
 
+\emph{RQ3 (robustness).}
 Under cascaded failures (Table~\ref{tab:multi} and Fig.~\ref{fig:multifail})
 the separation widens: partial moves 10.5 tasks and replans 11.6, versus
 34.3 and 70.1 for full repartitioning, and the static fallback meets only
@@ -685,7 +767,7 @@ B\&B    & 10330 & 10.0 & 11.3 & 26 \\
 \end{tabular}
 \end{table}
 
-\subsection{Deadline feasibility}
+\subsection{Deadline feasibility (RQ4)}
 
 \begin{figure}[t]
 \centering
@@ -708,7 +790,7 @@ simulated for partial and greedy, 71\% for B\&B, and 57\% for static ---
 most misses are caused by work outside the affected region, which no
 recovery strategy can accelerate.
 
-\subsection{Optimality validation}
+\subsection{Optimality validation (RQ5)}
 
 \begin{figure}[t]
 \centering
@@ -727,7 +809,7 @@ execution of tasks outside the affected region, so it is conservative; the
 tighter same-model comparison is the exact B\&B solver, against which
 partial is within 0.1\%.
 
-\subsection{Incremental path repair}
+\subsection{Incremental path repair (RQ6)}
 
 \begin{figure}[t]
 \centering
