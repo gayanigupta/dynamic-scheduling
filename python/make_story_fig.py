@@ -28,8 +28,9 @@ def domain(ax, x, y, w, h, label):
                  boxstyle="round,pad=1.8,rounding_size=2.6",
                  facecolor="none", edgecolor=DOM, linewidth=LW,
                  linestyle=(0, (4, 2.5)), zorder=1))
-    ax.text(x, y + h / 2 + 2.6, label, ha="center", va="center",
-            fontsize=FS - 1, color="#333333", zorder=4)
+    ax.text(x, y + h / 2 + 1.8, label, ha="center", va="center",
+            fontsize=FS - 1, color="#333333", zorder=5,
+            bbox=dict(facecolor="white", edgecolor="none", pad=1.5))
 
 
 def elink(ax, p0, p1, color=GREY, ls="-", rad=0.0, arrow=False, sh=6.0):
@@ -54,9 +55,10 @@ def partition(ax, x, y, w, h, label, edge=RED, lx=None, ly=None):
                  facecolor="none", edgecolor=edge, linewidth=LW,
                  linestyle=(0, (1.6, 2.2)), zorder=1))
     ax.text(lx if lx is not None else x,
-            ly if ly is not None else y + h / 2 + 2.8,
+            ly if ly is not None else y + h / 2 + 1.8,
             label, ha="center", va="center",
-            fontsize=FS - 1, color="#333333", zorder=4)
+            fontsize=FS - 1, color="#333333", zorder=5,
+            bbox=dict(facecolor="white", edgecolor="none", pad=1.5))
 
 
 def camera(ax, x, y):

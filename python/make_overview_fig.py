@@ -65,7 +65,8 @@ def partition(ax, x, y, w, h, tint, edge, label, lx=None, ly=None):
     ax.text(lx if lx is not None else x,
             ly if ly is not None else y + h / 2 + 3.4,
             label, ha=ha, va="center", fontsize=FS - 1,
-            color="#333333", zorder=4)
+            color="#333333", zorder=5,
+            bbox=dict(facecolor="white", edgecolor="none", pad=1.5))
 
 
 fig, ax = plt.subplots(figsize=(9.4, 4.4))
