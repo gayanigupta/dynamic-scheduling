@@ -86,15 +86,22 @@ and replanning scope grows further.
 
 Consider a traffic-incident analytics pipeline in a smart city
 (Fig.~\ref{fig:story}). The traffic authority, transit agency, and
-public-safety department each operate fog infrastructure and federate it to
-share capacity across administrative domains. Street cameras feed a
-\emph{ingest--detect--track--aggregate--alert} workflow; the scheduler
-partitions this DAG and pins each partition to a fog resource subject to
-capacity, memory, communication cost, and deadline constraints. When a fog
-resource fails mid-incident, the upstream stages that already produced
-results are still valid---yet the standard remedy, repartitioning the whole
-workflow, discards that progress exactly when the alert deadline matters
-most.
+public-safety department each operate fog infrastructure---roadside
+compute at intersections, depot servers, and dispatch-center
+nodes---and federate it to share capacity across administrative
+domains. Street cameras feed an incident-analytics DAG
+(\emph{ingest}, parallel \emph{detect} and \emph{count} stages, then
+\emph{track} and \emph{localize}, joining at \emph{alert}); the
+scheduler partitions this DAG and pins each partition to a fog resource
+subject to capacity, memory, communication cost, and deadline
+constraints. The value of the workflow is time-critical: an alert that
+arrives after responders have already been dispatched is worth little.
+Now suppose a member resource fails halfway through processing a
+rush-hour collision. The \emph{ingest} and \emph{count} stages that
+already produced results are still valid---yet the standard remedy,
+repartitioning the whole workflow, would stall the pipeline to migrate
+tasks that were executing correctly, exactly when the alert deadline
+matters most.
 
 Federated fog environments distribute workflow tasks across heterogeneous
 resources owned by different administrative domains. A workflow is a directed
@@ -886,12 +893,26 @@ We presented a dependency-aware partial repartitioning method that recovers
 DAG workflows from fog-resource failures by touching only the smallest
 consistent affected region, bounding replacement resources with a
 Steiner region around the anchors, penalizing optional movement, and
-lazily repairing only affected routes. It recovers with near-optimal
-schedule quality and optimal-rate deadline feasibility at a fraction
-of the replanning cost of full rescheduling, with the advantage widening
-under scale, data-heavy workloads, and cascaded failures. Future work:
-hard-deadline-aware placement, bandwidth contention, and online learning of
-the boundary-expansion threshold.
+lazily repairing only affected routes.
+
+Returning to the motivating scenario: when the transit-agency member fails
+mid-incident, our method re-places only the \emph{detect--track} branch
+onto neighboring resources while \emph{ingest}, \emph{count}, and
+\emph{localize} continue running and the alert stage keeps its staged
+inputs---the pipeline meets its deadline instead of stalling for a global
+re-plan. The evaluation substantiates each contribution empirically: the
+boundary rule keeps replanning scope proportional to the failure's blast
+radius (1.9--8.8 tasks vs.\ full repartitioning's 10.3--88.2 as workflows
+grow to 150 tasks); the anchor-aware repartitioner retains 99.8\% of
+exact-solver schedule quality while considering $\sim$7$\times$ fewer
+tasks and moving $\sim$3.5$\times$ fewer; incremental repair matches
+eager APSP rebuilds at 57\% fewer SPT rebuilds; and the timing study
+delimits the regime where the method pays---once the workflow is
+mid-flight, preserving completed and running work beats a globally
+optimal but disruptive re-plan.
+
+Future work: hard-deadline-aware placement, bandwidth contention, and
+online learning of the boundary-expansion threshold.
 
 \begin{thebibliography}{9}
 \bibitem{bhowmick2019}
