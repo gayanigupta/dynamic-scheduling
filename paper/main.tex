@@ -55,8 +55,9 @@ Madrid, Spain \\ antonio.fernandez@imdea.org}
 \maketitle
 
 \begin{abstract}
-Federated fog systems execute deadline-bound workflows---task DAGs
-partitioned across resources owned by different administrative domains.
+Federated fog systems extend cloud-edge resource management to
+deadline-bound workflows---task DAGs partitioned across resources owned
+by different administrative domains.
 When a resource fails mid-execution, the standard recovery
 action---repartitioning the entire workflow---interrupts tasks that were
 executing correctly, pays migration and re-staging costs for healthy
@@ -80,9 +81,9 @@ tasks---and the advantage widens under cascaded failures.
 \end{abstract}
 
 \begin{IEEEkeywords}
-Workflow scheduling, task graphs, federated fog computing, fault
-recovery, partial repartitioning, resource placement, dynamic graph
-algorithms, discrete-event simulation
+Workflow scheduling, resource management, edge--cloud continuum,
+federated fog, task graphs, failure recovery, partial repartitioning,
+placement, dynamic graph algorithms
 \end{IEEEkeywords}
 
 \section{Introduction}
@@ -106,8 +107,10 @@ repartitioning the whole workflow, would stall the pipeline to migrate
 tasks that were executing correctly, exactly when the alert deadline
 matters most.
 
-Federated fog environments distribute workflow tasks across heterogeneous
-resources owned by different administrative domains. A workflow is a directed
+Federated fog environments push the cloud--edge continuum a step
+further: workflow tasks run on heterogeneous resources owned by
+\emph{different} administrative domains that pool capacity at runtime.
+A workflow is a directed
 acyclic graph (DAG): nodes are tasks, edges are data dependencies. The
 scheduler partitions the DAG and assigns partitions to fog resources subject
 to capacity, memory, communication cost, and deadline constraints.
