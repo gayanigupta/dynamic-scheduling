@@ -144,9 +144,10 @@ Contributions:
 \includegraphics[width=0.92\textwidth]{figures/fig0_story.png}
 \caption{Motivating scenario. Top: fog resources federated across three
 administrative domains (traffic authority, transit agency, public safety);
-cameras stream into the federation. Bottom: an incident-analytics workflow
-partitioned and pinned to individual resources. A resource failure affects
-only the partitions staged on it.}
+cameras stream into the federation. Bottom: an incident-analytics DAG
+partitioned and pinned to individual resources. When member $f_3$ fails
+mid-execution, only the tasks staged on it (partition $P_3$) are
+affected---the recovery problem this paper addresses.}
 \label{fig:story}
 \end{figure*}
 

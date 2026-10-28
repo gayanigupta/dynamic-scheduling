@@ -11,16 +11,23 @@ LW = 0.75
 
 RED = "#b03030"
 BLUE = "#1f5fa8"
-GREEN = "#4d8a4d"
 GREY = "#444444"
 DOM = "#555555"
 
 
-def rnode(ax, x, y, label, r=5.5):
-    ax.add_patch(Circle((x, y), r, facecolor="white", edgecolor="black",
+def rnode(ax, x, y, label, r=5.5, dead=False):
+    ec = RED if dead else "black"
+    fc = "#f3d5d5" if dead else "white"
+    ax.add_patch(Circle((x, y), r, facecolor=fc, edgecolor=ec,
                         linewidth=LW, zorder=3))
-    ax.text(x, y + 0.3, label, ha="center", va="center",
-            fontsize=FS - 0.5, zorder=4)
+    if dead:
+        d = r * 0.62
+        for s in (1, -1):
+            ax.plot([x - d, x + d], [y - s * d, y + s * d], color=RED,
+                    lw=LW, zorder=4)
+    else:
+        ax.text(x, y + 0.3, label, ha="center", va="center",
+                fontsize=FS - 0.5, zorder=4)
 
 
 def domain(ax, x, y, w, h, label):
@@ -62,7 +69,6 @@ def partition(ax, x, y, w, h, label, edge=RED, lx=None, ly=None):
 
 
 def camera(ax, x, y):
-    """Minimal camera icon: body + lens."""
     ax.add_patch(FancyBboxPatch((x - 2.6, y - 1.6), 4.6, 3.2,
                  boxstyle="round,pad=0.4,rounding_size=0.8",
                  facecolor="white", edgecolor="black", linewidth=LW,
@@ -75,67 +81,74 @@ def camera(ax, x, y):
             fontsize=FS - 1.5, color="#555555", zorder=4)
 
 
-fig, ax = plt.subplots(figsize=(9.4, 4.1))
+fig, ax = plt.subplots(figsize=(9.4, 4.4))
 ax.set_xlim(0, 200)
-ax.set_ylim(0, 96)
+ax.set_ylim(0, 104)
 ax.axis("off")
 
-ax.plot([2, 198], [50, 50], color="#dddddd", lw=0.9)
-ax.text(3, 92, "federated\ninfrastructure", ha="left", va="top",
+ax.plot([2, 198], [56, 56], color="#dddddd", lw=0.9)
+ax.text(3, 98, "federated\ninfrastructure", ha="left", va="top",
         fontsize=FS - 1, color="#666666", style="italic")
-ax.text(3, 44, "analytics\nworkflow", ha="left", va="top",
+ax.text(3, 50, "analytics\nworkflow", ha="left", va="top",
         fontsize=FS - 1, color="#666666", style="italic")
 
 # ---------------- three federated domains ----------------
-# Traffic authority: two fog nodes
-domain(ax, 48, 68, 54, 26, "Traffic authority")
-rnode(ax, 36, 72, "$f_1$")
-rnode(ax, 60, 63, "$f_2$")
-elink(ax, (36, 72), (60, 63))
-camera(ax, 11, 78)
-camera(ax, 11, 68)
-elink(ax, (15.5, 77), (30.5, 73), arrow=True, sh=3)
-elink(ax, (15.5, 69), (30.5, 71), arrow=True, sh=3)
+domain(ax, 48, 73, 54, 26, "Traffic authority")
+rnode(ax, 36, 77, "$f_1$")
+rnode(ax, 60, 68, "$f_2$")
+elink(ax, (36, 77), (60, 68))
+camera(ax, 11, 83)
+camera(ax, 11, 73)
+elink(ax, (15.5, 82), (30.5, 78), arrow=True, sh=3)
+elink(ax, (15.5, 74), (30.5, 76), arrow=True, sh=3)
 
-# Transit agency
-domain(ax, 110, 68, 52, 26, "Transit agency")
-rnode(ax, 100, 66, "$f_3$")
-rnode(ax, 120, 72, "$f_4$")
-elink(ax, (100, 66), (120, 72))
+domain(ax, 112, 73, 52, 26, "Transit agency")
+rnode(ax, 102, 71, "$f_3$", dead=True)
+rnode(ax, 122, 77, "$f_4$")
+elink(ax, (102, 71), (122, 77))
 
-# Public safety
-domain(ax, 168, 68, 52, 26, "Public safety")
-rnode(ax, 158, 66, "$f_5$")
-rnode(ax, 178, 72, "$f_6$")
-elink(ax, (158, 66), (178, 72))
+domain(ax, 168, 73, 52, 26, "Public safety")
+rnode(ax, 158, 71, "$f_5$")
+rnode(ax, 178, 77, "$f_6$")
+elink(ax, (158, 71), (178, 77))
 
-# federation links across domains
-elink(ax, (60, 63), (100, 66), rad=-0.18)
-elink(ax, (120, 72), (158, 66), rad=0.18)
-ax.text(100, 90, "resource federation\n(shared capacity across domains)",
+elink(ax, (60, 68), (102, 71), rad=-0.18)
+elink(ax, (122, 77), (158, 71), rad=0.18)
+ax.text(110, 96, "resource federation\n(shared capacity across domains)",
         ha="center", fontsize=FS - 1, color="#555555")
+ax.text(102, 61.5, "member fails", color=RED, fontsize=FS - 1,
+        ha="center", va="center",
+        bbox=dict(facecolor="white", edgecolor="none", pad=1.0))
 
-# ---------------- analytics DAG ----------------
-xs = [30, 70, 110, 150, 186]
-labels = ["ingest", "detect", "track", "aggregate", "alert"]
-for x, lab in zip(xs, labels):
-    tnode(ax, x, 30, lab)
-for i in range(4):
-    elink(ax, (xs[i] + 8.75, 30), (xs[i + 1] - 8.75, 30), arrow=True,
-          sh=5)
+# ---------------- branching analytics DAG ----------------
+# ingest -> {detect, count} -> track -> aggregate -> alert
+tnode(ax, 24, 33, "ingest")
+tnode(ax, 62, 41, "detect")
+tnode(ax, 62, 25, "count")
+tnode(ax, 100, 33, "track")
+tnode(ax, 138, 33, "aggregate")
+tnode(ax, 180, 33, "alert")
 
-# partition boundaries mapped onto resources
-partition(ax, 30, 30, 21, 11, "$P_1 \\rightarrow f_1$")
-partition(ax, 90, 30, 62, 11, "$P_2 \\rightarrow f_2$", lx=90, ly=38.6)
-partition(ax, 150, 30, 21, 11, "$P_3 \\rightarrow f_4$")
-partition(ax, 186, 30, 21, 11, "$P_4 \\rightarrow f_5$")
+elink(ax, (33, 34.5), (52.5, 40), arrow=True, rad=-0.15, sh=5)
+elink(ax, (33, 31.5), (52.5, 26), arrow=True, rad=0.15, sh=5)
+elink(ax, (71.5, 40), (91, 34.5), arrow=True, rad=-0.15, sh=5)
+elink(ax, (71.5, 26), (91, 31.5), arrow=True, rad=0.15, sh=5)
+elink(ax, (109, 33), (129, 33), arrow=True, sh=5)
+elink(ax, (147, 33), (171, 33), arrow=True, sh=5)
 
-# mapping hints
-elink(ax, (30, 54.5), (30, 37), ls=(0, (3, 3)), sh=3)
-elink(ax, (110, 54.5), (150, 37), ls=(0, (3, 3)), rad=-0.15, sh=3)
+# partitions pinned to resources
+partition(ax, 24, 33, 21, 11, "$P_1 \\rightarrow f_1$")
+partition(ax, 62, 33, 21, 30, "$P_2 \\rightarrow f_2$", ly=50.5)
+partition(ax, 100, 33, 21, 11, "$P_3 \\rightarrow f_3$ (failed)", edge=RED)
+partition(ax, 158.5, 33, 62, 11, "$P_4 \\rightarrow f_4$", lx=158.5)
 
-ax.text(100, 9, "each partition is pinned to a fog resource; failure of\n"
-        "one resource affects only the tasks staged on it",
+
+# mapping hints (dashed) from infra to partitions
+elink(ax, (36, 71.2), (28, 45.5), ls=(0, (3, 3)), rad=0.15, sh=4)
+elink(ax, (102, 65), (100, 38.5), ls=(0, (3, 3)), sh=4)
+
+ax.text(100, 8, "each partition is pinned to a fog resource; failure of one\n"
+        "member affects only the tasks staged on it",
         ha="center", fontsize=FS - 1, color="#555555")
 
 fig.savefig("figures/fig0_story.png", dpi=220,
