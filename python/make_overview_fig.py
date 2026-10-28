@@ -59,9 +59,12 @@ def partition(ax, x, y, w, h, tint, edge, label, lx=None, ly=None):
                  boxstyle="round,pad=1.6,rounding_size=2.4",
                  facecolor="none", edgecolor=edge,
                  linewidth=LW, linestyle=(0, (1.6, 2.2)), zorder=1))
+    ha = "center"
+    if lx is not None:
+        ha = "right" if lx < x else "left"
     ax.text(lx if lx is not None else x,
             ly if ly is not None else y + h / 2 + 3.4,
-            label, ha="center", va="center", fontsize=FS - 1,
+            label, ha=ha, va="center", fontsize=FS - 1,
             color="#333333", zorder=4)
 
 
@@ -149,11 +152,10 @@ partition(ax, 152, 44, 17, 11, C_DONE, RED, "$P_A$")
 # updated partitions: same boxes, new members, blue dotted boundary
 tnode(ax, 136, 31, "T2", C_NEW, BLUE)
 tnode(ax, 170, 31, "T3", C_OK, "#4d8a4d")
-partition(ax, 153, 31, 50, 11, C_OK, BLUE, "$P_C$  (updated)")
+partition(ax, 153, 31, 50, 11, C_OK, BLUE, "$P_C$", lx=125, ly=31)
 tnode(ax, 136, 19, "T4", C_NEW, BLUE)
 tnode(ax, 170, 19, "T5", C_OK, "#4d8a4d")
-partition(ax, 153, 19, 50, 11, C_OK, BLUE, "$P_D$  (updated)",
-          lx=126, ly=15)
+partition(ax, 153, 19, 50, 11, C_OK, BLUE, "$P_D$", lx=125, ly=19)
 tnode(ax, 152, 7, "T6", C_OK, "#4d8a4d")
 partition(ax, 152, 7, 17, 10, C_OK, RED, "$P_E$", lx=163, ly=7)
 
