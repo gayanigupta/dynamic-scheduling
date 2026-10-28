@@ -737,9 +737,10 @@ the separation widens: partial moves 10.5 tasks and replans 11.6, versus
 34.3 and 70.1 for full repartitioning, and the static fallback meets only
 4\% of deadlines (Fig.~\ref{fig:deadline}).
 
-\emph{Failure timing.} We also sweep the injection point over 10\%, 50\%,
-and 90\% of the no-failure makespan (90 scenarios per point). The timing
-changes which strategy is preferable, not whether partial recovery works:
+\emph{Failure timing.} To isolate the effect of when the failure occurs,
+we vary the injection point across 10\%, 50\%, and 90\% of the no-failure
+makespan (90 scenarios per point). Failure timing changes which strategy
+is preferable, not whether partial recovery works:
 at 10\%---early enough that most of the workflow is still unexecuted---full
 repartitioning meets 90\% of deadlines versus 69\% for partial, because a
 global re-plan legitimately reshuffles work that has barely begun. At 50\%
