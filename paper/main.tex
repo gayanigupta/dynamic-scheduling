@@ -59,9 +59,9 @@ Federated fog systems extend cloud-edge resource management to
 deadline-bound workflows---task DAGs partitioned across resources owned
 by different administrative domains.
 When a resource fails mid-execution, the standard recovery
-action---repartitioning the entire workflow---interrupts tasks that were
-executing correctly, pays migration and re-staging costs for healthy
-work, and forces a rebuild of the inter-resource routing plan. We
+action is to repartition the entire workflow, which interrupts tasks
+that were executing correctly, pays migration and re-staging costs for
+healthy work, and forces a rebuild of the inter-resource routing plan. We
 present a \emph{partial repartitioning} method that confines recovery to
 the failure's blast radius. A boundary rule maps the failed node to the
 smallest dependency-closed region of the task DAG; an anchor-aware
@@ -76,8 +76,8 @@ solved with HiGHS, partial repartitioning retains 99.8\% of exact
 schedule quality while considering $7\times$ fewer tasks, moving
 $3.5\times$ fewer, and cutting communication cost $12\times$. The
 replanned region tracks the failure's blast radius rather than workflow
-size---about $10\times$ smaller than full repartitioning at 150
-tasks---and the advantage widens under cascaded failures.
+size (about $10\times$ smaller than full repartitioning at 150
+tasks), and the advantage widens under cascaded failures.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -102,7 +102,7 @@ constraints. The value of the workflow is time-critical: an alert that
 arrives after responders have already been dispatched is worth little.
 Now suppose a member resource fails halfway through processing a
 rush-hour collision. The \emph{ingest} and \emph{count} stages that
-already produced results are still valid---yet the standard remedy,
+already produced results are still valid. Yet the usual remedy,
 repartitioning the whole workflow, would stall the pipeline to migrate
 tasks that were executing correctly, exactly when the alert deadline
 matters most.
@@ -117,11 +117,11 @@ to capacity, memory, communication cost, and deadline constraints.
 
 Resource failures during execution are routine in fog federations. When a
 resource fails, unfinished tasks assigned to it can no longer proceed. The
-naive remedy---repartitioning and rescheduling the whole workflow---is
+naive remedy, repartitioning and rescheduling the whole workflow, is
 expensive three ways: (i)~it must be computed quickly while the workflow
 stalls; (ii)~it migrates tasks that were executing correctly, paying
-migration and re-staging costs; (iii)~it disrupts the existing communication
-plan, so inter-task routes must be recomputed.
+migration and re-staging costs; and (iii)~it disrupts the existing
+communication plan, so inter-task routes must be recomputed.
 
 We propose a \emph{partial repartitioning} method that, given a failed node
 in the infrastructure graph, (a)~identifies the smallest
@@ -327,7 +327,7 @@ method runs while healthy resources keep executing; redeployed tasks become
 runnable after a replanning delay plus per-task migration time.
 
 \emph{Edge cases.} The semantics above cover the boundary conditions a
-recovery method must survive. If no feasible replacement exists for an
+recovery method must handle. If no feasible replacement exists for an
 affected task---capacity exhausted or the infrastructure partitioned---the
 run is recorded as aborted rather than silently producing an invalid
 schedule. If a second failure strikes a replacement resource before its new
@@ -776,7 +776,7 @@ the separation widens: partial moves 10.5 tasks and replans 11.6, versus
 we vary the injection point across 10\%, 50\%, and 90\% of the no-failure
 makespan (90 scenarios per point). Failure timing changes which strategy
 is preferable, not whether partial recovery works:
-at 10\%---early enough that most of the workflow is still unexecuted---full
+at 10\%, early enough that most of the workflow is still unexecuted, full
 repartitioning meets 90\% of deadlines versus 69\% for partial, because a
 global re-plan legitimately reshuffles work that has barely begun. At 50\%
 the gap narrows to 97\% vs.\ 93\%, and at 90\% all strategies converge to
@@ -819,13 +819,13 @@ repartitioning improves feasibility, at $3\times$ the migrations.}
 Fig.~\ref{fig:dlsweep} sweeps the deadline from $0.9\times$ to
 $1.6\times$ the no-failure makespan. Partial repartitioning meets deadlines
 at essentially the rate of the exact B\&B recovery at every factor (83\%
-vs.\ 83\% at $1.3\times$) --- its deadline feasibility is optimal within
+vs.\ 83\% at $1.3\times$), so its deadline feasibility is optimal within
 the affected-region constraint. Only full repartitioning exceeds this rate
 (94\%), by paying $3.5\times$ more migrations and $12\times$ more
 communication cost. On the 28 MILP-solved instances, the optimal recovered
 region meets the deadline in every case as an estimated bound, versus 75\%
-simulated for partial and greedy, 71\% for B\&B, and 57\% for static ---
-most misses are caused by work outside the affected region, which no
+simulated for partial and greedy, 71\% for B\&B, and 57\% for static.
+Most misses are caused by work outside the affected region, which no
 recovery strategy can accelerate.
 
 \subsection{Optimality validation (RQ5)}
@@ -863,7 +863,7 @@ We measured route-repair work by rerunning every scenario with eager
 repair enabled: on each failure, all alive source rows are rebuilt
 immediately (the eager equivalent of a full APSP recompute). A single
 failure triggers $3.9$ single-source SPT rebuilds under lazy repair
-versus $9.0$ under eager rebuild---a $57\%$ reduction---with identical
+versus $9.0$ under eager rebuild, a $57\%$ reduction, with identical
 deadline rates (0.85) and statistically identical makespans (8{,}215 vs.\
 8{,}213 ms). Under three cascading failures lazy repair still does less
 work ($54$ vs.\ $70$ rows), though the margin narrows as more cached rows
@@ -893,7 +893,7 @@ the candidate set rather than changing the outcome.
         wall time is 0.19\,ms for partial versus 1.36\,ms for full
         repartitioning under a single failure (0.57\,ms vs 3.31\,ms under
         three), while exact branch-and-bound averages 182\,ms and reaches
-        12.4\,s---three to five orders of magnitude too slow for online
+        12.4\,s, three to five orders of magnitude too slow for online
         recovery.
 \end{itemize}
 
